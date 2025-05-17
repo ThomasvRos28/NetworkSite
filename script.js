@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <li><a href="#">Notifications</a></li>
             </ul>
             <div class="mobile-nav-buttons">
-                <a href="#" class="btn btn-outline">Sign In</a>
+                <a href="signin.html" class="btn btn-outline">Sign In</a>
                 <a href="signup.html" class="btn btn-primary">Sign Up</a>
             </div>
         `;

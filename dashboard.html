@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ConnectPro</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Additional styles for the dashboard page */
+        .dashboard-container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .welcome-section {
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+        }
+
+        .welcome-section h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+
+        .welcome-section p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+        }
+
+        .profile-card {
+            background-color: var(--white);
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: var(--shadow);
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-right: 15px;
+        }
+
+        .profile-info h2 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .profile-info p {
+            color: var(--text-light);
+        }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background-color: var(--accent-color);
+            border-radius: 6px;
+        }
+
+        .stat-item h3 {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .stat-item p {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .profile-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .profile-actions .btn {
+            text-align: center;
+        }
+
+        .content-card {
+            background-color: var(--white);
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+        }
+
+        .content-card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+        }
+
+        .content-card h2 i {
+            color: var(--primary-color);
+            margin-right: 10px;
+        }
+
+        .activity-item {
+            display: flex;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .activity-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(10, 102, 194, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .activity-content h3 {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .activity-content p {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .activity-time {
+            color: var(--text-light);
+            font-size: 0.8rem;
+        }
+
+        .connection-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .connection-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .connection-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .connection-info {
+            flex-grow: 1;
+        }
+
+        .connection-info h3 {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .connection-info p {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .connection-action {
+            margin-left: 10px;
+        }
+
+        .user-dropdown {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .user-dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background-color: var(--white);
+            min-width: 180px;
+            box-shadow: var(--shadow);
+            border-radius: 4px;
+            z-index: 10;
+        }
+
+        .user-dropdown:hover .user-dropdown-content {
+            display: block;
+        }
+
+        .user-dropdown-content a {
+            display: block;
+            padding: 12px 15px;
+            color: var(--text-color);
+            transition: background-color 0.3s ease;
+        }
+
+        .user-dropdown-content a:hover {
+            background-color: var(--accent-color);
+        }
+
+        .user-dropdown-content a i {
+            margin-right: 10px;
+            color: var(--primary-color);
+        }
+
+        .user-dropdown-content .divider {
+            height: 1px;
+            background-color: var(--border-color);
+            margin: 5px 0;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1><a href="dashboard.html">ConnectPro</a></h1>
+            </div>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="dashboard.html" class="active">Dashboard</a></li>
+                    <li><a href="#">Network</a></li>
+                    <li><a href="#">Jobs</a></li>
+                    <li><a href="#">Messaging</a></li>
+                    <li><a href="#">Notifications</a></li>
+                </ul>
+                <div class="user-dropdown">
+                    <div class="user-avatar" id="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-dropdown-content">
+                        <a href="#"><i class="fas fa-user-circle"></i> View Profile</a>
+                        <a href="#"><i class="fas fa-cog"></i> Settings</a>
+                        <div class="divider"></div>
+                        <a href="#" id="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </div>
+                </div>
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Dashboard Content -->
+    <section class="dashboard-section">
+        <div class="dashboard-container">
+            <div class="welcome-section">
+                <h1>Welcome back, <span id="user-name">User</span>!</h1>
+                <p>Here's what's happening in your professional network today.</p>
+            </div>
+
+            <div class="dashboard-grid">
+                <!-- Profile Card -->
+                <div class="profile-card">
+                    <div class="profile-header">
+                        <div class="profile-avatar" id="profile-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="profile-info">
+                            <h2 id="profile-name">User Name</h2>
+                            <p id="profile-title">Professional Title</p>
+                        </div>
+                    </div>
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <h3>0</h3>
+                            <p>Connections</p>
+                        </div>
+                        <div class="stat-item">
+                            <h3>0</h3>
+                            <p>Profile Views</p>
+                        </div>
+                    </div>
+                    <div class="profile-actions">
+                        <a href="#" class="btn btn-primary">Complete Your Profile</a>
+                        <a href="#" class="btn btn-secondary">Find Connections</a>
+                    </div>
+                </div>
+
+                <!-- Content Area -->
+                <div class="content-area">
+                    <!-- Recent Activity -->
+                    <div class="content-card">
+                        <h2><i class="fas fa-chart-line"></i> Recent Activity</h2>
+                        <div class="activity-list">
+                            <div class="activity-item">
+                                <div class="activity-icon">
+                                    <i class="fas fa-user-plus"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <h3>Welcome to ConnectPro!</h3>
+                                    <p>You've successfully created your account. Start building your network by connecting with professionals in your field.</p>
+                                    <span class="activity-time">Just now</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recommended Connections -->
+                    <div class="content-card">
+                        <h2><i class="fas fa-users"></i> People You May Know</h2>
+                        <div class="connections-list">
+                            <div class="connection-item">
+                                <div class="connection-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="connection-info">
+                                    <h3>Sarah Johnson</h3>
+                                    <p>Senior Developer at Tech Solutions</p>
+                                </div>
+                                <div class="connection-action">
+                                    <button class="btn btn-secondary">Connect</button>
+                                </div>
+                            </div>
+                            <div class="connection-item">
+                                <div class="connection-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="connection-info">
+                                    <h3>Michael Chen</h3>
+                                    <p>Product Manager at Innovation Labs</p>
+                                </div>
+                                <div class="connection-action">
+                                    <button class="btn btn-secondary">Connect</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-column">
+                    <h3>ConnectPro</h3>
+                    <p>The professional networking platform designed to help you connect, collaborate, and grow.</p>
+                    <div class="social-icons">
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Careers</a></li>
+                        <li><a href="#">Press</a></li>
+                        <li><a href="#">Blog</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Community Guidelines</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Contact</h4>
+                    <ul>
+                        <li><a href="mailto:info@connectpro.com">info@connectpro.com</a></li>
+                        <li><a href="tel:+1234567890">+1 (234) 567-890</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2023 ConnectPro. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Notification Container -->
+    <div id="notification-container" style="display: none; position: fixed; top: 20px; right: 20px; max-width: 350px; padding: 15px 20px; border-radius: 5px; color: white; z-index: 1000; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"></div>
+
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in
+            const userData = localStorage.getItem('user');
+
+            if (!userData) {
+                // User is not logged in, redirect to signin page
+                window.location.href = 'signin.html';
+                return;
+            }
+
+            // Parse user data
+            const user = JSON.parse(userData);
+
+            // Update UI with user information
+            document.getElementById('user-name').textContent = user.firstName || user.username;
+            document.getElementById('profile-name').textContent = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username;
+
+            // Set profile title based on available data
+            document.getElementById('profile-title').textContent = 'ConnectPro Member';
+
+            // Set avatar initials
+            const avatarElement = document.getElementById('profile-avatar');
+            const userInitials = getInitials(user.firstName, user.lastName, user.username);
+            avatarElement.innerHTML = userInitials;
+
+            // Also update the header avatar
+            document.getElementById('user-avatar').innerHTML = userInitials;
+
+            // Handle logout
+            document.getElementById('logout-link').addEventListener('click', function(e) {
+                e.preventDefault();
+
+                // Clear user data from localStorage
+                localStorage.removeItem('user');
+
+                // Show notification
+                showNotification(true, 'You have been logged out successfully.');
+
+                // Redirect to home page after a delay
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 2000);
+            });
+
+            // Function to get user initials
+            function getInitials(firstName, lastName, username) {
+                if (firstName && lastName) {
+                    return `${firstName.charAt(0)}${lastName.charAt(0)}`;
+                } else if (firstName) {
+                    return firstName.charAt(0);
+                } else if (username) {
+                    return username.charAt(0).toUpperCase();
+                } else {
+                    return '<i class="fas fa-user"></i>';
+                }
+            }
+
+            // Function to show notification
+            function showNotification(success, message) {
+                const notificationContainer = document.getElementById('notification-container');
+
+                // Set styles based on success or error
+                if (success) {
+                    notificationContainer.style.backgroundColor = '#2ecc71'; // Green for success
+                } else {
+                    notificationContainer.style.backgroundColor = '#e74c3c'; // Red for error
+                }
+
+                // Set message and show notification
+                notificationContainer.textContent = message;
+                notificationContainer.style.display = 'block';
+
+                // Hide notification after 5 seconds
+                setTimeout(() => {
+                    notificationContainer.style.display = 'none';
+                }, 5000);
+            }
+        });
+    </script>
+</body>
+</html>

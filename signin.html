@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - ConnectPro</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Additional styles for the signin page */
+        .signin-container {
+            max-width: 450px;
+            margin: 80px auto;
+            padding: 35px;
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+
+        .signin-header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .signin-header h1 {
+            color: var(--primary-color);
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .signin-header p {
+            color: var(--text-light);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input[type="email"],
+        .form-group input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .form-error {
+            color: #e74c3c;
+            font-size: 0.9rem;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .forgot-password {
+            text-align: right;
+            margin-top: -15px;
+            margin-bottom: 20px;
+        }
+
+        .forgot-password a {
+            color: var(--primary-color);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+
+        .btn-signin {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.1rem;
+            margin-top: 10px;
+        }
+
+        .signup-link {
+            text-align: center;
+            margin-top: 25px;
+        }
+
+        .signup-link a {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .signup-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1><a href="index.html">ConnectPro</a></h1>
+            </div>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                </ul>
+                <div class="nav-buttons">
+                    <a href="signin.html" class="btn btn-outline">Sign In</a>
+                    <a href="signup.html" class="btn btn-primary">Sign Up</a>
+                </div>
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Signin Form Section -->
+    <section class="signin-section">
+        <div class="container">
+            <div class="signin-container">
+                <div class="signin-header">
+                    <h1>Sign In</h1>
+                    <p>Welcome back to ConnectPro</p>
+                </div>
+                <form id="signin-form">
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" required>
+                        <div class="form-error" id="email-error">Please enter a valid email address</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required>
+                        <div class="form-error" id="password-error">Please enter your password</div>
+                    </div>
+                    <div class="forgot-password">
+                        <a href="#">Forgot password?</a>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-signin">Sign In</button>
+                </form>
+                <div class="signup-link">
+                    <p>Don't have an account? <a href="signup.html">Sign Up</a></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-column">
+                    <h3>ConnectPro</h3>
+                    <p>The professional networking platform designed to help you connect, collaborate, and grow.</p>
+                    <div class="social-icons">
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Careers</a></li>
+                        <li><a href="#">Press</a></li>
+                        <li><a href="#">Blog</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Community Guidelines</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Contact</h4>
+                    <ul>
+                        <li><a href="mailto:info@connectpro.com">info@connectpro.com</a></li>
+                        <li><a href="tel:+1234567890">+1 (234) 567-890</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2023 ConnectPro. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Notification Container -->
+    <div id="notification-container" style="display: none; position: fixed; top: 20px; right: 20px; max-width: 350px; padding: 15px 20px; border-radius: 5px; color: white; z-index: 1000; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"></div>
+
+    <script src="script.js"></script>
+    <script>
+        // Function to show login result
+        function showLoginResult(success, message) {
+            const notificationContainer = document.getElementById('notification-container');
+
+            // Set styles based on success or error
+            if (success) {
+                notificationContainer.style.backgroundColor = '#2ecc71'; // Green for success
+            } else {
+                notificationContainer.style.backgroundColor = '#e74c3c'; // Red for error
+            }
+
+            // Set message and show notification
+            notificationContainer.textContent = message;
+            notificationContainer.style.display = 'block';
+
+            // Hide notification after 5 seconds
+            setTimeout(() => {
+                notificationContainer.style.display = 'none';
+            }, 5000);
+        }
+
+        // Form validation and submission
+        document.getElementById('signin-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            let isValid = true;
+
+            // Validate email
+            const email = document.getElementById('email');
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email.value)) {
+                document.getElementById('email-error').style.display = 'block';
+                isValid = false;
+            } else {
+                document.getElementById('email-error').style.display = 'none';
+            }
+
+            // Validate password
+            const password = document.getElementById('password');
+            if (!password.value) {
+                document.getElementById('password-error').style.display = 'block';
+                isValid = false;
+            } else {
+                document.getElementById('password-error').style.display = 'none';
+            }
+
+            if (isValid) {
+                // Show loading state
+                const submitButton = document.querySelector('.btn-signin');
+                const originalText = submitButton.textContent;
+                submitButton.textContent = 'Signing In...';
+                submitButton.disabled = true;
+
+                // Prepare login data
+                const loginData = {
+                    email: email.value,
+                    password: password.value
+                };
+
+                // Send login request to server
+                fetch('http://localhost:8080/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(loginData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Reset button state
+                    submitButton.textContent = originalText;
+                    submitButton.disabled = false;
+
+                    if (data.success) {
+                        // Show success message
+                        showLoginResult(true, 'Login successful! Redirecting...');
+
+                        // Store user data in localStorage (for session management)
+                        localStorage.setItem('user', JSON.stringify(data.user));
+
+                        // Redirect to dashboard page after a delay
+                        setTimeout(() => {
+                            window.location.href = 'dashboard.html';
+                        }, 2000);
+                    } else {
+                        // Show error message
+                        showLoginResult(false, data.message);
+                    }
+                })
+                .catch(error => {
+                    // Reset button state
+                    submitButton.textContent = originalText;
+                    submitButton.disabled = false;
+
+                    // Show error message
+                    showLoginResult(false, 'An error occurred. Please try again later.');
+                    console.error('Error:', error);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

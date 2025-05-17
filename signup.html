@@ -16,6 +16,7 @@
             background-color: var(--white);
             border-radius: 8px;
             box-shadow: var(--shadow);
+            overflow: hidden;
         }
 
         .signup-header {
@@ -45,7 +46,9 @@
 
         .form-group input[type="text"],
         .form-group input[type="email"],
-        .form-group input[type="password"] {
+        .form-group input[type="password"],
+        .form-group input[type="number"],
+        .form-group select {
             width: 100%;
             padding: 12px;
             border: 1px solid var(--border-color);
@@ -54,7 +57,8 @@
             transition: border-color 0.3s ease;
         }
 
-        .form-group input:focus {
+        .form-group input:focus,
+        .form-group select:focus {
             outline: none;
             border-color: var(--primary-color);
         }
@@ -99,6 +103,64 @@
         .login-link a:hover {
             text-decoration: underline;
         }
+
+        /* Slide styles */
+        .form-slide {
+            transition: transform 0.4s ease;
+        }
+
+        .slide-container {
+            width: 200%;
+            display: flex;
+            transition: transform 0.4s ease;
+        }
+
+        .slide {
+            width: 50%;
+            padding-right: 15px;
+        }
+
+        .slide-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .slide-indicator {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--border-color);
+            margin: 0 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .indicator.active {
+            background-color: var(--primary-color);
+        }
+
+        .skill-container {
+            margin-bottom: 10px;
+        }
+
+        .skill-hint {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-top: 5px;
+            margin-bottom: 15px;
+        }
+
+        .field-note {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -113,7 +175,7 @@
                     <li><a href="index.html">Home</a></li>
                 </ul>
                 <div class="nav-buttons">
-                    <a href="#" class="btn btn-outline">Sign In</a>
+                    <a href="signin.html" class="btn btn-outline">Sign In</a>
                     <a href="signup.html" class="btn btn-primary">Sign Up</a>
                 </div>
                 <div class="hamburger">
@@ -133,41 +195,111 @@
                     <h1>Sign Up</h1>
                     <p>Join ConnectPro and start building your professional network</p>
                 </div>
+                <div class="slide-indicator">
+                    <div class="indicator active" id="indicator-1"></div>
+                    <div class="indicator" id="indicator-2"></div>
+                </div>
                 <form id="signup-form">
-                    <div class="form-group">
-                        <label for="firstName">First Name</label>
-                        <input type="text" id="firstName" name="firstName" required>
-                        <div class="form-error" id="firstName-error">Please enter your first name</div>
+                    <div class="slide-container" id="slide-container">
+                        <!-- Slide 1: Personal Information -->
+                        <div class="slide" id="slide-1">
+                            <div class="form-group">
+                                <label for="firstName">First Name</label>
+                                <input type="text" id="firstName" name="firstName" required>
+                                <div class="form-error" id="firstName-error">Please enter your first name</div>
+                            </div>
+                            <div class="form-group">
+                                <label for="lastName">Last Name</label>
+                                <input type="text" id="lastName" name="lastName" required>
+                                <div class="form-error" id="lastName-error">Please enter your last name</div>
+                            </div>
+                            <div class="form-group">
+                                <label for="username">Username</label>
+                                <input type="text" id="username" name="username" required>
+                                <div class="form-error" id="username-error">Please enter a username</div>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email Address</label>
+                                <input type="email" id="email" name="email" required>
+                                <div class="form-error" id="email-error">Please enter a valid email address</div>
+                            </div>
+                            <div class="form-group">
+                                <label for="password">Password</label>
+                                <input type="password" id="password" name="password" required>
+                                <div class="form-error" id="password-error">Password must be at least 8 characters</div>
+                            </div>
+                            <div class="form-group">
+                                <label for="confirmPassword">Confirm Password</label>
+                                <input type="password" id="confirmPassword" name="confirmPassword" required>
+                                <div class="form-error" id="confirmPassword-error">Passwords do not match</div>
+                            </div>
+                            <div class="form-group checkbox">
+                                <input type="checkbox" id="terms" name="terms" required>
+                                <label for="terms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label>
+                                <div class="form-error" id="terms-error">You must agree to the terms</div>
+                            </div>
+                            <div class="slide-buttons">
+                                <div></div> <!-- Empty div for flex spacing -->
+                                <button type="button" id="next-button" class="btn btn-primary">Next</button>
+                            </div>
+                        </div>
+
+                        <!-- Slide 2: Professional Information -->
+                        <div class="slide" id="slide-2">
+                            <div class="form-group">
+                                <label for="workExperience">Years of Work Experience</label>
+                                <input type="number" id="workExperience" name="workExperience" min="0" max="50" required>
+                                <div class="form-error" id="workExperience-error">Please enter your years of experience</div>
+                            </div>
+                            <div class="form-group">
+                                <label for="companyName">Company Name</label>
+                                <input type="text" id="companyName" name="companyName" required>
+                                <div class="form-error" id="companyName-error">Please enter your company name</div>
+                            </div>
+                            <div class="form-group">
+                                <label for="fieldOfWork">Field of Work</label>
+                                <select id="fieldOfWork" name="fieldOfWork" required>
+                                    <option value="">Select your field</option>
+                                    <option value="technology">Technology</option>
+                                    <option value="finance">Finance</option>
+                                    <option value="healthcare">Healthcare</option>
+                                    <option value="education">Education</option>
+                                    <option value="marketing">Marketing</option>
+                                    <option value="design">Design</option>
+                                    <option value="engineering">Engineering</option>
+                                    <option value="sales">Sales</option>
+                                    <option value="consulting">Consulting</option>
+                                    <option value="other">Other</option>
+                                </select>
+                                <div class="form-error" id="fieldOfWork-error">Please select your field of work</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="skills">Skills (Recommended: at least 3)</label>
+                                <div class="skill-hint">Enter skills relevant to your field of work</div>
+                                <div class="skill-container">
+                                    <input type="text" id="skill1" name="skill1" placeholder="Skill 1" required>
+                                    <div class="form-error" id="skill1-error">Please enter at least one skill</div>
+                                </div>
+                                <div class="skill-container">
+                                    <input type="text" id="skill2" name="skill2" placeholder="Skill 2" required>
+                                    <div class="form-error" id="skill2-error">Please enter at least two skills</div>
+                                </div>
+                                <div class="skill-container">
+                                    <input type="text" id="skill3" name="skill3" placeholder="Skill 3" required>
+                                    <div class="form-error" id="skill3-error">We recommend at least three skills</div>
+                                </div>
+                            </div>
+
+                            <div class="slide-buttons">
+                                <button type="button" id="prev-button" class="btn btn-secondary">Previous</button>
+                                <button type="submit" class="btn btn-primary btn-signup">Sign Up</button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="lastName">Last Name</label>
-                        <input type="text" id="lastName" name="lastName" required>
-                        <div class="form-error" id="lastName-error">Please enter your last name</div>
-                    </div>
-                    <div class="form-group">
-                        <label for="email">Email Address</label>
-                        <input type="email" id="email" name="email" required>
-                        <div class="form-error" id="email-error">Please enter a valid email address</div>
-                    </div>
-                    <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" id="password" name="password" required>
-                        <div class="form-error" id="password-error">Password must be at least 8 characters</div>
-                    </div>
-                    <div class="form-group">
-                        <label for="confirmPassword">Confirm Password</label>
-                        <input type="password" id="confirmPassword" name="confirmPassword" required>
-                        <div class="form-error" id="confirmPassword-error">Passwords do not match</div>
-                    </div>
-                    <div class="form-group checkbox">
-                        <input type="checkbox" id="terms" name="terms" required>
-                        <label for="terms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label>
-                        <div class="form-error" id="terms-error">You must agree to the terms</div>
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-signup">Sign Up</button>
                 </form>
                 <div class="login-link">
-                    <p>Already have an account? <a href="#">Sign In</a></p>
+                    <p>Already have an account? <a href="signin.html">Sign In</a></p>
                 </div>
             </div>
         </div>
@@ -219,74 +351,272 @@
         </div>
     </footer>
 
+    <!-- Notification Container -->
+    <div id="notification-container" style="display: none; position: fixed; top: 20px; right: 20px; max-width: 350px; padding: 15px 20px; border-radius: 5px; color: white; z-index: 1000; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"></div>
+
     <script src="script.js"></script>
     <script>
-        // Form validation
-        document.getElementById('signup-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            let isValid = true;
-            
-            // Validate first name
-            const firstName = document.getElementById('firstName');
-            if (!firstName.value.trim()) {
-                document.getElementById('firstName-error').style.display = 'block';
-                isValid = false;
-            } else {
-                document.getElementById('firstName-error').style.display = 'none';
+        document.addEventListener('DOMContentLoaded', function() {
+            // Function to show registration result
+            window.showRegistrationResult = function(success, message) {
+                const notificationContainer = document.getElementById('notification-container');
+
+                // Set styles based on success or error
+                if (success) {
+                    notificationContainer.style.backgroundColor = '#2ecc71'; // Green for success
+                } else {
+                    notificationContainer.style.backgroundColor = '#e74c3c'; // Red for error
+                }
+
+                // Set message and show notification
+                notificationContainer.textContent = message;
+                notificationContainer.style.display = 'block';
+
+                // Hide notification after 5 seconds
+                setTimeout(() => {
+                    notificationContainer.style.display = 'none';
+                }, 5000);
+            };
+            const slideContainer = document.getElementById('slide-container');
+            const nextButton = document.getElementById('next-button');
+            const prevButton = document.getElementById('prev-button');
+            const indicator1 = document.getElementById('indicator-1');
+            const indicator2 = document.getElementById('indicator-2');
+
+            let currentSlide = 1;
+
+            // Next button click handler
+            nextButton.addEventListener('click', function() {
+                if (validateSlide1()) {
+                    // Move to slide 2
+                    slideContainer.style.transform = 'translateX(-50%)';
+                    currentSlide = 2;
+
+                    // Update indicators
+                    indicator1.classList.remove('active');
+                    indicator2.classList.add('active');
+                }
+            });
+
+            // Previous button click handler
+            prevButton.addEventListener('click', function() {
+                // Move back to slide 1
+                slideContainer.style.transform = 'translateX(0)';
+                currentSlide = 1;
+
+                // Update indicators
+                indicator2.classList.remove('active');
+                indicator1.classList.add('active');
+            });
+
+            // Validate slide 1 fields
+            function validateSlide1() {
+                let isValid = true;
+
+                // Validate first name
+                const firstName = document.getElementById('firstName');
+                if (!firstName.value.trim()) {
+                    document.getElementById('firstName-error').style.display = 'block';
+                    isValid = false;
+                } else {
+                    document.getElementById('firstName-error').style.display = 'none';
+                }
+
+                // Validate last name
+                const lastName = document.getElementById('lastName');
+                if (!lastName.value.trim()) {
+                    document.getElementById('lastName-error').style.display = 'block';
+                    isValid = false;
+                } else {
+                    document.getElementById('lastName-error').style.display = 'none';
+                }
+
+                // Validate username
+                const username = document.getElementById('username');
+                if (!username.value.trim()) {
+                    document.getElementById('username-error').style.display = 'block';
+                    isValid = false;
+                } else {
+                    document.getElementById('username-error').style.display = 'none';
+                }
+
+                // Validate email
+                const email = document.getElementById('email');
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email.value)) {
+                    document.getElementById('email-error').style.display = 'block';
+                    isValid = false;
+                } else {
+                    document.getElementById('email-error').style.display = 'none';
+                }
+
+                // Validate password
+                const password = document.getElementById('password');
+                if (password.value.length < 8) {
+                    document.getElementById('password-error').style.display = 'block';
+                    isValid = false;
+                } else {
+                    document.getElementById('password-error').style.display = 'none';
+                }
+
+                // Validate confirm password
+                const confirmPassword = document.getElementById('confirmPassword');
+                if (password.value !== confirmPassword.value) {
+                    document.getElementById('confirmPassword-error').style.display = 'block';
+                    isValid = false;
+                } else {
+                    document.getElementById('confirmPassword-error').style.display = 'none';
+                }
+
+                // Validate terms
+                const terms = document.getElementById('terms');
+                if (!terms.checked) {
+                    document.getElementById('terms-error').style.display = 'block';
+                    isValid = false;
+                } else {
+                    document.getElementById('terms-error').style.display = 'none';
+                }
+
+                return isValid;
             }
-            
-            // Validate last name
-            const lastName = document.getElementById('lastName');
-            if (!lastName.value.trim()) {
-                document.getElementById('lastName-error').style.display = 'block';
-                isValid = false;
-            } else {
-                document.getElementById('lastName-error').style.display = 'none';
+
+            // Validate slide 2 fields
+            function validateSlide2() {
+                let isValid = true;
+
+                // Validate work experience
+                const workExperience = document.getElementById('workExperience');
+                if (!workExperience.value || workExperience.value < 0) {
+                    document.getElementById('workExperience-error').style.display = 'block';
+                    isValid = false;
+                } else {
+                    document.getElementById('workExperience-error').style.display = 'none';
+                }
+
+                // Validate company name
+                const companyName = document.getElementById('companyName');
+                if (!companyName.value.trim()) {
+                    document.getElementById('companyName-error').style.display = 'block';
+                    isValid = false;
+                } else {
+                    document.getElementById('companyName-error').style.display = 'none';
+                }
+
+                // Validate field of work
+                const fieldOfWork = document.getElementById('fieldOfWork');
+                if (!fieldOfWork.value) {
+                    document.getElementById('fieldOfWork-error').style.display = 'block';
+                    isValid = false;
+                } else {
+                    document.getElementById('fieldOfWork-error').style.display = 'none';
+                }
+
+                // Validate skills
+                const skill1 = document.getElementById('skill1');
+                if (!skill1.value.trim()) {
+                    document.getElementById('skill1-error').style.display = 'block';
+                    isValid = false;
+                } else {
+                    document.getElementById('skill1-error').style.display = 'none';
+                }
+
+                const skill2 = document.getElementById('skill2');
+                if (!skill2.value.trim()) {
+                    document.getElementById('skill2-error').style.display = 'block';
+                    isValid = false;
+                } else {
+                    document.getElementById('skill2-error').style.display = 'none';
+                }
+
+                const skill3 = document.getElementById('skill3');
+                if (!skill3.value.trim()) {
+                    document.getElementById('skill3-error').style.display = 'block';
+                    // Not setting isValid to false since the third skill is recommended but not required
+                }
+
+                return isValid;
             }
-            
-            // Validate email
-            const email = document.getElementById('email');
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email.value)) {
-                document.getElementById('email-error').style.display = 'block';
-                isValid = false;
-            } else {
-                document.getElementById('email-error').style.display = 'none';
-            }
-            
-            // Validate password
-            const password = document.getElementById('password');
-            if (password.value.length < 8) {
-                document.getElementById('password-error').style.display = 'block';
-                isValid = false;
-            } else {
-                document.getElementById('password-error').style.display = 'none';
-            }
-            
-            // Validate confirm password
-            const confirmPassword = document.getElementById('confirmPassword');
-            if (password.value !== confirmPassword.value) {
-                document.getElementById('confirmPassword-error').style.display = 'block';
-                isValid = false;
-            } else {
-                document.getElementById('confirmPassword-error').style.display = 'none';
-            }
-            
-            // Validate terms
-            const terms = document.getElementById('terms');
-            if (!terms.checked) {
-                document.getElementById('terms-error').style.display = 'block';
-                isValid = false;
-            } else {
-                document.getElementById('terms-error').style.display = 'none';
-            }
-            
-            if (isValid) {
-                alert('Sign up successful! Welcome to ConnectPro!');
-                // In a real application, you would submit the form to the server here
-                // this.submit();
-            }
+
+            // Form submission handler
+            document.getElementById('signup-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                // If on slide 1, move to slide 2
+                if (currentSlide === 1) {
+                    if (validateSlide1()) {
+                        // Move to slide 2
+                        slideContainer.style.transform = 'translateX(-50%)';
+                        currentSlide = 2;
+
+                        // Update indicators
+                        indicator1.classList.remove('active');
+                        indicator2.classList.add('active');
+                    }
+                    return;
+                }
+
+                // If on slide 2, validate and submit
+                if (validateSlide2()) {
+                    // Show loading state
+                    const submitButton = document.querySelector('.btn-signup');
+                    const originalText = submitButton.textContent;
+                    submitButton.textContent = 'Creating Account...';
+                    submitButton.disabled = true;
+
+                    // Collect all form data
+                    const formData = {
+                        firstName: document.getElementById('firstName').value,
+                        lastName: document.getElementById('lastName').value,
+                        username: document.getElementById('username').value,
+                        email: document.getElementById('email').value,
+                        password: document.getElementById('password').value,
+                        workExperience: document.getElementById('workExperience').value,
+                        companyName: document.getElementById('companyName').value,
+                        fieldOfWork: document.getElementById('fieldOfWork').value,
+                        skill1: document.getElementById('skill1').value,
+                        skill2: document.getElementById('skill2').value,
+                        skill3: document.getElementById('skill3').value
+                    };
+
+                    // Send data to server
+                    fetch('http://localhost:8080/api/register', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(formData)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Reset button state
+                        submitButton.textContent = originalText;
+                        submitButton.disabled = false;
+
+                        if (data.success) {
+                            // Show success message
+                            showRegistrationResult(true, data.message);
+                            // Clear form
+                            this.reset();
+                            // Redirect to signin page after a delay
+                            setTimeout(() => {
+                                window.location.href = 'signin.html';
+                            }, 3000);
+                        } else {
+                            // Show error message
+                            showRegistrationResult(false, data.message);
+                        }
+                    })
+                    .catch(error => {
+                        // Reset button state
+                        submitButton.textContent = originalText;
+                        submitButton.disabled = false;
+
+                        // Show error message
+                        showRegistrationResult(false, 'An error occurred. Please try again later.');
+                        console.error('Error:', error);
+                    });
+                }
+            });
         });
     </script>
 </body>
