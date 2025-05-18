@@ -12,20 +12,33 @@ ConnectPro is a professional networking platform designed to help users connect,
 ## Technical Implementation
 
 - Frontend: HTML, CSS, JavaScript
-- Backend: Python with HTTP server
-- Database: SQLite
+- Backend: Node.js with Express
+- Database: MongoDB with Mongoose
 
 ## Setup and Installation
 
-1. Make sure you have Python 3.6+ installed
+1. Make sure you have Node.js (v14+) and MongoDB installed
 2. Clone this repository
-3. Run the server:
+3. Install dependencies:
 
 ```bash
-python server.py
+npm install
 ```
 
-4. Open your browser and navigate to `http://localhost:8000`
+4. Create a `.env` file with your MongoDB connection string:
+
+```
+MONGODB_URI=mongodb://localhost:27017/connectpro
+PORT=8080
+```
+
+5. Run the server:
+
+```bash
+npm start
+```
+
+6. Open your browser and navigate to `http://localhost:8080`
 
 ## User Registration Flow
 
@@ -35,35 +48,34 @@ python server.py
 4. Password is securely hashed with a salt before storage
 5. User receives confirmation and is redirected to the sign-in page
 
-## Database Schema
+## Database Schema (MongoDB)
 
-### Users Table
-- id (Primary Key)
+### User Model
+- _id (MongoDB ObjectId)
 - username (Unique)
 - email (Unique)
-- password_hash
-- salt
-- first_name
-- last_name
-- created_at
+- password (Hashed)
+- firstName
+- lastName
+- createdAt
 
-### Professional Info Table
-- id (Primary Key)
-- user_id (Foreign Key)
-- work_experience
-- company_name
-- field_of_work
+### ProfessionalInfo Model
+- _id (MongoDB ObjectId)
+- user (Reference to User)
+- workExperience
+- companyName
+- fieldOfWork
 
-### Skills Table
-- id (Primary Key)
-- user_id (Foreign Key)
+### Skill Model
+- _id (MongoDB ObjectId)
+- user (Reference to User)
 - skill
 
 ## Security Features
 
-- Password hashing using PBKDF2 with SHA-256
-- Unique salt for each user
-- 100,000 iterations for password hashing
+- Password hashing using bcrypt
+- Mongoose middleware for automatic password hashing
+- MongoDB document validation
 - Input validation on both client and server side
 
 ## Future Enhancements
