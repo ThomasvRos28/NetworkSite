@@ -242,6 +242,10 @@
             <nav>
                 <ul class="nav-links">
                     <li><a href="#" class="active">Home</a></li>
+                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="network.html">Network</a></li>
+                    <li><a href="discover.html" class="discover-link" style="display: none;">Discover</a></li>
+                    <li><a href="swipe-history.html" class="history-link" style="display: none;">History</a></li>
                     <li><a href="#mentorship-section" class="mentorship-link" style="display: none;">Mentorship</a></li>
                     <li><a href="messages.html" class="messages-link" style="display: none;">Messages <span id="messages-badge" class="badge" style="display: none;">0</span></a></li>
                 </ul>
@@ -473,6 +477,8 @@
                 loggedInNav.style.display = 'block';
                 mentorshipSection.style.display = 'block';
                 mentorshipLink.style.display = 'block';
+                document.querySelector('.discover-link').style.display = 'block';
+                document.querySelector('.history-link').style.display = 'block';
                 document.querySelector('.messages-link').style.display = 'block';
 
                 // Set user avatar

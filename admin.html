@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - ConnectPro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Admin Page Specific Styles */
+        .admin-section {
+            padding: 30px 0;
+            min-height: calc(100vh - 70px);
+        }
+
+        .admin-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .admin-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .admin-header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .admin-header p {
+            color: var(--text-light);
+        }
+
+        .admin-card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .admin-card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .admin-card p {
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+
+        .user-list {
+            margin-bottom: 20px;
+        }
+
+        .user-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .user-item:last-child {
+            border-bottom: none;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .user-name {
+            font-weight: 500;
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-reset {
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-reset:hover {
+            background-color: #f57c00;
+        }
+
+        .btn-delete {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-delete:hover {
+            background-color: #d32f2f;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 5px;
+            color: white;
+            z-index: 1000;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-100px);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .notification.success {
+            background-color: #2ecc71;
+        }
+
+        .notification.error {
+            background-color: #e74c3c;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-light);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1>ConnectPro</h1>
+            </div>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="admin.html" class="active">Admin</a></li>
+                </ul>
+                <div class="nav-icons">
+                    <div class="user-dropdown" id="user-dropdown">
+                        <div class="user-avatar" id="user-avatar"></div>
+                        <div class="dropdown-content">
+                            <a href="dashboard.html">Dashboard</a>
+                            <a href="#" id="logout-link">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Admin Section -->
+    <section class="admin-section">
+        <div class="container">
+            <div class="admin-container">
+                <div class="admin-header">
+                    <h1>Admin Panel</h1>
+                    <p>Manage users and system settings</p>
+                </div>
+                <div class="admin-card">
+                    <h2>System Management</h2>
+                    <p>Reset all swipe history in the system</p>
+                    <button id="reset-all-swipes" class="btn btn-primary" style="background-color: #ff9800; margin-bottom: 20px;">Reset All Swipes</button>
+                </div>
+                <div class="admin-card">
+                    <h2>User Management</h2>
+                    <p>Reset swipe history for individual users</p>
+                    <div class="user-list" id="user-list">
+                        <div class="loading">Loading users...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load users
+            loadUsers();
+
+            // Add event listener for reset all swipes button
+            document.getElementById('reset-all-swipes').addEventListener('click', function() {
+                if (confirm('Are you sure you want to reset ALL swipe history in the system? This cannot be undone.')) {
+                    resetAllSwipes();
+                }
+            });
+
+            // Helper function to get initials from name
+            function getInitials(firstName, lastName, username) {
+                if (firstName && lastName) {
+                    return `${firstName.charAt(0)}${lastName.charAt(0)}`;
+                } else if (firstName) {
+                    return firstName.charAt(0);
+                } else if (username) {
+                    return username.charAt(0);
+                } else {
+                    return 'U';
+                }
+            }
+
+            // Function to load users
+            function loadUsers() {
+                const userList = document.getElementById('user-list');
+                userList.innerHTML = '<div class="loading">Loading users...</div>';
+
+                fetch('/api/users')
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Users API response:', data);
+                        if (data.success) {
+                            if (data.users && data.users.length > 0) {
+                                renderUsers(data.users);
+                            } else {
+                                userList.innerHTML = `<p>No users found in the database. Please create some users first.</p>`;
+                            }
+                        } else {
+                            userList.innerHTML = `<p>Error: ${data.message || 'Failed to load users'}</p>`;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading users:', error);
+                        userList.innerHTML = `<p>Error: Failed to connect to server</p>`;
+                    });
+            }
+
+            // Function to render users
+            function renderUsers(users) {
+                const userList = document.getElementById('user-list');
+
+                if (!users || users.length === 0) {
+                    userList.innerHTML = '<p>No users found</p>';
+                    return;
+                }
+
+                let html = '';
+                users.forEach(user => {
+                    const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username;
+                    const initials = getInitials(user.firstName, user.lastName, user.username);
+
+                    html += `
+                    <div class="user-item" data-id="${user._id}">
+                        <div class="user-info">
+                            <div class="user-avatar">${initials}</div>
+                            <div class="user-name">${fullName}</div>
+                        </div>
+                        <div class="user-actions">
+                            <button class="btn-reset" data-id="${user._id}">Reset Swipes</button>
+                        </div>
+                    </div>
+                    `;
+                });
+
+                userList.innerHTML = html;
+
+                // Add event listeners to reset buttons
+                document.querySelectorAll('.btn-reset').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const userId = this.getAttribute('data-id');
+                        resetUserSwipes(userId);
+                    });
+                });
+            }
+
+            // Function to reset user swipes
+            function resetUserSwipes(userId) {
+                fetch(`/api/reset-swipes/${userId}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification(true, 'Swipe history reset successfully');
+                    } else {
+                        showNotification(false, data.message || 'Error resetting swipe history');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error resetting swipe history:', error);
+                    showNotification(false, 'Error connecting to server');
+                });
+            }
+
+            // Function to reset all swipes
+            function resetAllSwipes() {
+                fetch('/api/reset-all-swipes', {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification(true, 'All swipe history reset successfully');
+                    } else {
+                        showNotification(false, data.message || 'Error resetting all swipe history');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error resetting all swipe history:', error);
+                    showNotification(false, 'Error connecting to server');
+                });
+            }
+
+            // Function to show notification
+            function showNotification(isSuccess, message) {
+                const notification = document.getElementById('notification');
+                notification.textContent = message;
+                notification.className = 'notification ' + (isSuccess ? 'success' : 'error');
+                notification.classList.add('show');
+
+                // Hide after 3 seconds
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>

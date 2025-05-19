@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swipe History - ConnectPro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Swipe History Page Specific Styles */
+        .history-section {
+            padding: 30px 0;
+            min-height: calc(100vh - 70px);
+        }
+
+        .history-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .history-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .history-header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .history-header p {
+            color: var(--text-light);
+        }
+
+        .history-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .history-tab {
+            padding: 10px 20px;
+            margin: 0 10px;
+            cursor: pointer;
+            position: relative;
+            font-weight: 500;
+            color: var(--text-light);
+            transition: color 0.3s ease;
+        }
+
+        .history-tab.active {
+            color: var(--primary-color);
+        }
+
+        .history-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--primary-color);
+        }
+
+        .history-content {
+            display: none;
+        }
+
+        .history-content.active {
+            display: block;
+        }
+
+        .history-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .history-card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .history-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .history-card-image {
+            height: 150px;
+            background-color: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .history-card-image .profile-initials {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: bold;
+            color: white;
+            background-color: var(--primary-color);
+        }
+
+        .history-card-content {
+            padding: 15px;
+        }
+
+        .history-card-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .history-card-position {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 10px;
+        }
+
+        .history-card-location {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .history-card-location i {
+            margin-right: 5px;
+        }
+
+        .history-card-date {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-bottom: 15px;
+        }
+
+        .history-card-actions {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .history-card-action {
+            flex: 1;
+            padding: 8px;
+            text-align: center;
+            border-radius: 5px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .action-like {
+            color: #4CAF50;
+            border: 1px solid #4CAF50;
+            margin-right: 5px;
+        }
+
+        .action-like:hover, .action-like.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .action-dislike {
+            color: #ff5c5c;
+            border: 1px solid #ff5c5c;
+            margin-left: 5px;
+        }
+
+        .action-dislike:hover, .action-dislike.active {
+            background-color: #ff5c5c;
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .empty-state p {
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-light);
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 5px;
+            color: white;
+            z-index: 1000;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-100px);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .notification.success {
+            background-color: #2ecc71;
+        }
+
+        .notification.error {
+            background-color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1>ConnectPro</h1>
+            </div>
+            <nav>
+                <ul class="nav-links" id="logged-in-nav" style="display: none;">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="network.html">Network</a></li>
+                    <li><a href="discover.html">Discover</a></li>
+                    <li><a href="swipe-history.html" class="active">History</a></li>
+                    <li><a href="messages.html" class="messages-link" style="display: none;">Messages</a></li>
+                </ul>
+                <ul class="nav-links" id="logged-out-nav">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="signin.html">Sign In</a></li>
+                    <li><a href="signup.html">Sign Up</a></li>
+                </ul>
+                <div class="nav-icons">
+                    <div class="user-dropdown" id="user-dropdown" style="display: none;">
+                        <div class="user-avatar" id="user-avatar"></div>
+                        <div class="dropdown-content">
+                            <a href="dashboard.html">Dashboard</a>
+                            <a href="#" id="logout-link">Logout</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Swipe History Section -->
+    <section class="history-section">
+        <div class="container">
+            <div class="history-container">
+                <div class="history-header">
+                    <h1>Swipe History</h1>
+                    <p>Review and change your previous swipe decisions</p>
+                </div>
+                <div class="history-tabs">
+                    <div class="history-tab active" data-tab="all">All</div>
+                    <div class="history-tab" data-tab="likes">Likes</div>
+                    <div class="history-tab" data-tab="dislikes">Dislikes</div>
+                </div>
+                <div class="history-content active" id="all-content">
+                    <div class="history-list" id="all-list">
+                        <div class="loading">Loading your swipe history...</div>
+                    </div>
+                </div>
+                <div class="history-content" id="likes-content">
+                    <div class="history-list" id="likes-list">
+                        <!-- Likes will be loaded here -->
+                    </div>
+                </div>
+                <div class="history-content" id="dislikes-content">
+                    <div class="history-list" id="dislikes-list">
+                        <!-- Dislikes will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in
+            const userData = localStorage.getItem('user');
+            if (!userData) {
+                window.location.href = 'signin.html';
+                return;
+            }
+
+            // Parse user data
+            const user = JSON.parse(userData);
+
+            // Update UI based on login status
+            const loggedOutNav = document.getElementById('logged-out-nav');
+            const loggedInNav = document.getElementById('logged-in-nav');
+            const userDropdown = document.getElementById('user-dropdown');
+            const userAvatar = document.getElementById('user-avatar');
+            const messagesLink = document.querySelector('.messages-link');
+
+            loggedOutNav.style.display = 'none';
+            loggedInNav.style.display = 'flex';
+            userDropdown.style.display = 'block';
+            messagesLink.style.display = 'block';
+
+            // Set user avatar
+            userAvatar.innerHTML = getInitials(user.firstName, user.lastName, user.username);
+
+            // Load swipe history
+            loadSwipeHistory();
+
+            // Tab functionality
+            const tabs = document.querySelectorAll('.history-tab');
+            const tabContents = document.querySelectorAll('.history-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+
+                    // Remove active class from all tabs and contents
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+
+                    // Add active class to clicked tab and corresponding content
+                    this.classList.add('active');
+                    document.getElementById(`${tabId}-content`).classList.add('active');
+                });
+            });
+
+            // Logout functionality
+            document.getElementById('logout-link').addEventListener('click', function(e) {
+                e.preventDefault();
+                localStorage.removeItem('user');
+                window.location.href = 'signin.html';
+            });
+
+            // Function to load swipe history
+            function loadSwipeHistory() {
+                const allList = document.getElementById('all-list');
+                const likesList = document.getElementById('likes-list');
+                const dislikesList = document.getElementById('dislikes-list');
+
+                allList.innerHTML = '<div class="loading">Loading your swipe history...</div>';
+                likesList.innerHTML = '<div class="loading">Loading your likes...</div>';
+                dislikesList.innerHTML = '<div class="loading">Loading your dislikes...</div>';
+
+                fetch(`/api/swipe-history/${user.id}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const swipeHistory = data.swipeHistory;
+
+                            if (swipeHistory.length === 0) {
+                                showEmptyState(allList, 'No Swipe History', 'You haven\'t swiped on any profiles yet. Go to the Discover page to start swiping!');
+                                showEmptyState(likesList, 'No Likes', 'You haven\'t liked any profiles yet. Go to the Discover page to start swiping!');
+                                showEmptyState(dislikesList, 'No Dislikes', 'You haven\'t disliked any profiles yet. Go to the Discover page to start swiping!');
+                                return;
+                            }
+
+                            // Filter likes and dislikes
+                            const likes = swipeHistory.filter(item => item.action === 'like');
+                            const dislikes = swipeHistory.filter(item => item.action === 'dislike');
+
+                            // Render all swipes
+                            renderSwipeHistory(allList, swipeHistory);
+
+                            // Render likes
+                            if (likes.length > 0) {
+                                renderSwipeHistory(likesList, likes);
+                            } else {
+                                showEmptyState(likesList, 'No Likes', 'You haven\'t liked any profiles yet. Go to the Discover page to start swiping!');
+                            }
+
+                            // Render dislikes
+                            if (dislikes.length > 0) {
+                                renderSwipeHistory(dislikesList, dislikes);
+                            } else {
+                                showEmptyState(dislikesList, 'No Dislikes', 'You haven\'t disliked any profiles yet. Go to the Discover page to start swiping!');
+                            }
+                        } else {
+                            showEmptyState(allList, 'Error', data.message || 'Failed to load swipe history');
+                            showEmptyState(likesList, 'Error', data.message || 'Failed to load likes');
+                            showEmptyState(dislikesList, 'Error', data.message || 'Failed to load dislikes');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading swipe history:', error);
+                        showEmptyState(allList, 'Error', 'Failed to connect to server');
+                        showEmptyState(likesList, 'Error', 'Failed to connect to server');
+                        showEmptyState(dislikesList, 'Error', 'Failed to connect to server');
+                    });
+            }
+
+            // Function to render swipe history
+            function renderSwipeHistory(container, history) {
+                let html = '';
+
+                history.forEach(item => {
+                    const fullName = `${item.firstName} ${item.lastName}`.trim() || item.username;
+                    const initials = getInitials(item.firstName, item.lastName, item.username);
+
+                    let position = '';
+                    let company = '';
+                    let location = '';
+
+                    if (item.professionalInfo) {
+                        position = item.professionalInfo.fieldOfWork || '';
+                        company = item.professionalInfo.companyName ? ` at ${item.professionalInfo.companyName}` : '';
+
+                        const country = item.professionalInfo.country || '';
+                        const city = item.professionalInfo.location || '';
+                        location = [city, country].filter(Boolean).join(', ');
+                    }
+
+                    // Format date
+                    const date = new Date(item.timestamp);
+                    const formattedDate = date.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    });
+
+                    html += `
+                    <div class="history-card" data-id="${item.id}">
+                        <div class="history-card-image">
+                            <div class="profile-initials">${initials}</div>
+                        </div>
+                        <div class="history-card-content">
+                            <div class="history-card-name">${fullName}</div>
+                            <div class="history-card-position">${position}${company}</div>
+                            ${location ? `<div class="history-card-location"><i class="fas fa-map-marker-alt"></i> ${location}</div>` : ''}
+                            <div class="history-card-date">Swiped on ${formattedDate}</div>
+                            <div class="history-card-actions">
+                                <div class="history-card-action action-like ${item.action === 'like' ? 'active' : ''}" data-action="like" data-id="${item.id}">
+                                    <i class="fas fa-check"></i> Like
+                                </div>
+                                <div class="history-card-action action-dislike ${item.action === 'dislike' ? 'active' : ''}" data-action="dislike" data-id="${item.id}">
+                                    <i class="fas fa-times"></i> Dislike
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                });
+
+                container.innerHTML = html;
+
+                // Add event listeners to action buttons
+                container.querySelectorAll('.history-card-action').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const action = this.getAttribute('data-action');
+                        const userId = this.getAttribute('data-id');
+
+                        // If the button is already active, do nothing
+                        if (this.classList.contains('active')) {
+                            return;
+                        }
+
+                        updateSwipeAction(userId, action);
+                    });
+                });
+            }
+
+            // Function to update swipe action
+            function updateSwipeAction(toUserId, action) {
+                fetch('/api/match', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        fromUserId: user.id,
+                        toUserId: toUserId,
+                        action: action
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update UI to reflect the change
+                        document.querySelectorAll(`.history-card-action[data-id="${toUserId}"]`).forEach(button => {
+                            const buttonAction = button.getAttribute('data-action');
+
+                            if (buttonAction === action) {
+                                button.classList.add('active');
+                            } else {
+                                button.classList.remove('active');
+                            }
+                        });
+
+                        // Show notification
+                        showNotification(true, `Profile ${action === 'like' ? 'liked' : 'disliked'} successfully`);
+
+                        // If it's a mutual match, show a special notification
+                        if (data.mutualMatch) {
+                            showNotification(true, 'It\'s a match! You are now connected and can message each other.');
+
+                            // Show a more detailed notification after a short delay
+                            setTimeout(() => {
+                                showNotification(true, 'Connection created! You can now collaborate and message each other.');
+                            }, 3500);
+
+                            // Reload the page after a delay to update all tabs
+                            setTimeout(() => {
+                                loadSwipeHistory();
+                            }, 5000);
+                        }
+                    } else {
+                        showNotification(false, data.message || 'Error updating swipe action');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating swipe action:', error);
+                    showNotification(false, 'Error connecting to server');
+                });
+            }
+
+            // Function to show empty state
+            function showEmptyState(container, title, message) {
+                container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-history"></i>
+                    <h3>${title}</h3>
+                    <p>${message}</p>
+                    <a href="discover.html" class="btn btn-primary">Go to Discover</a>
+                </div>
+                `;
+            }
+
+            // Function to show notification
+            function showNotification(isSuccess, message) {
+                const notification = document.getElementById('notification');
+                notification.textContent = message;
+                notification.className = 'notification ' + (isSuccess ? 'success' : 'error');
+                notification.classList.add('show');
+
+                // Hide after 3 seconds
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+        });
+
+        // Helper function to get initials from name
+        function getInitials(firstName, lastName, username) {
+            if (firstName && lastName) {
+                return `${firstName.charAt(0)}${lastName.charAt(0)}`;
+            } else if (firstName) {
+                return firstName.charAt(0);
+            } else if (username) {
+                return username.charAt(0);
+            } else {
+                return 'U';
+            }
+        }
+    </script>
+</body>
+</html>
