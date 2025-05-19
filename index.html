@@ -7,6 +7,230 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Styles for mentorship section */
+        .mentorship-section {
+            background-color: #f9f9f9;
+            padding: 60px 0;
+            display: none; /* Hidden by default, shown for logged-in users */
+        }
+
+        .mentorship-toggle {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+            margin-bottom: 30px;
+        }
+
+        .toggle-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: #2196F3;
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+
+        .mentorship-details {
+            margin-top: 16px;
+            display: none;
+        }
+
+        .mentorship-details textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+            min-height: 100px;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .mentorship-details button {
+            margin-top: 12px;
+        }
+
+        .mentors-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+            margin-top: 30px;
+        }
+
+        .mentor-card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .mentor-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .mentor-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .mentor-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #2196F3;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 16px;
+        }
+
+        .mentor-info h4 {
+            margin: 0 0 4px 0;
+        }
+
+        .mentor-info p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .mentor-details {
+            margin-top: 16px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .mentor-actions {
+            margin-top: 16px;
+        }
+
+        .user-dropdown {
+            position: relative;
+            display: none; /* Hidden by default, shown for logged-in users */
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #2196F3;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .user-dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: #fff;
+            min-width: 200px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            z-index: 1;
+            padding: 8px 0;
+        }
+
+        .user-dropdown-content a {
+            color: #333;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            transition: background-color 0.3s;
+        }
+
+        .user-dropdown-content a:hover {
+            background-color: #f1f1f1;
+        }
+
+        .user-dropdown:hover .user-dropdown-content {
+            display: block;
+        }
+
+        .divider {
+            height: 1px;
+            background-color: #eee;
+            margin: 8px 0;
+        }
+
+        /* Notification styles */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 4px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        .notification.success {
+            background-color: #4CAF50;
+        }
+
+        .notification.error {
+            background-color: #F44336;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
 </head>
 <body>
     <!-- Header Section -->
@@ -18,11 +242,26 @@
             <nav>
                 <ul class="nav-links">
                     <li><a href="#" class="active">Home</a></li>
-
+                    <li><a href="#mentorship-section" class="mentorship-link" style="display: none;">Mentorship</a></li>
+                    <li><a href="messages.html" class="messages-link" style="display: none;">Messages <span id="messages-badge" class="badge" style="display: none;">0</span></a></li>
                 </ul>
-                <div class="nav-buttons">
+                <!-- For logged out users -->
+                <div class="nav-buttons" id="logged-out-nav">
                     <a href="signin.html" class="btn btn-outline">Sign In</a>
                     <a href="signup.html" class="btn btn-primary">Sign Up</a>
+                </div>
+                <!-- For logged in users -->
+                <div class="user-dropdown" id="logged-in-nav">
+                    <div class="user-avatar" id="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-dropdown-content">
+                        <a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                        <a href="#"><i class="fas fa-user-circle"></i> Profile</a>
+                        <a href="#"><i class="fas fa-cog"></i> Settings</a>
+                        <div class="divider"></div>
+                        <a href="#" id="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </div>
                 </div>
                 <div class="hamburger">
                     <span></span>
@@ -116,6 +355,37 @@
         </div>
     </section>
 
+    <!-- Mentorship Section (visible only for logged-in users) -->
+    <section id="mentorship-section" class="mentorship-section">
+        <div class="container">
+            <h2 class="section-title">Mentorship & Collaboration</h2>
+
+            <!-- Mentorship Toggle for logged-in users -->
+            <div class="mentorship-toggle" id="mentorship-toggle">
+                <div class="toggle-header">
+                    <h3>Make Yourself Available as a Mentor/Collaborator</h3>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="mentorship-switch">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <p>Toggle this switch to indicate that you're available for mentorship or collaboration. Other professionals will be able to see your profile and reach out to you.</p>
+
+                <div class="mentorship-details" id="mentorship-details">
+                    <textarea id="mentorship-text" placeholder="Describe what kind of mentorship or collaboration you're interested in. For example: 'Available to mentor junior developers in JavaScript' or 'Looking to collaborate on open-source React projects'"></textarea>
+                    <button id="save-mentorship" class="btn btn-primary">Save Details</button>
+                </div>
+            </div>
+
+            <!-- Available Mentors List -->
+            <h3>Available Mentors & Collaborators</h3>
+            <div class="mentors-list" id="mentors-list">
+                <!-- Mentor cards will be dynamically added here -->
+                <div class="loading-mentors">Loading available mentors...</div>
+            </div>
+        </div>
+    </section>
+
     <!-- CTA Section -->
     <section class="cta">
         <div class="container">
@@ -173,6 +443,309 @@
         </div>
     </footer>
 
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+
     <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in
+            const userData = localStorage.getItem('user');
+            const user = userData ? JSON.parse(userData) : null;
+
+            // Elements
+            const loggedOutNav = document.getElementById('logged-out-nav');
+            const loggedInNav = document.getElementById('logged-in-nav');
+            const mentorshipSection = document.getElementById('mentorship-section');
+            const mentorshipLink = document.querySelector('.mentorship-link');
+            const mentorshipSwitch = document.getElementById('mentorship-switch');
+            const mentorshipDetails = document.getElementById('mentorship-details');
+            const mentorshipText = document.getElementById('mentorship-text');
+            const saveMentorshipBtn = document.getElementById('save-mentorship');
+            const mentorsList = document.getElementById('mentors-list');
+            const userAvatar = document.getElementById('user-avatar');
+            const logoutLink = document.getElementById('logout-link');
+
+            // Show appropriate navigation based on login status
+            if (user) {
+                // User is logged in
+                loggedOutNav.style.display = 'none';
+                loggedInNav.style.display = 'block';
+                mentorshipSection.style.display = 'block';
+                mentorshipLink.style.display = 'block';
+                document.querySelector('.messages-link').style.display = 'block';
+
+                // Set user avatar
+                userAvatar.innerHTML = getInitials(user.firstName, user.lastName, user.username);
+
+                // Fetch user's mentorship status
+                fetchMentorshipStatus(user.id);
+
+                // Fetch available mentors
+                fetchAvailableMentors();
+
+                // Check for unread messages
+                checkUnreadMessages(user.id);
+            } else {
+                // User is logged out
+                loggedOutNav.style.display = 'flex';
+                loggedInNav.style.display = 'none';
+                mentorshipSection.style.display = 'none';
+                mentorshipLink.style.display = 'none';
+                document.querySelector('.messages-link').style.display = 'none';
+            }
+
+            // Function to check for unread messages
+            function checkUnreadMessages(userId) {
+                fetch(`/api/messages/unread/${userId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.unreadCount > 0) {
+                            const messagesBadge = document.getElementById('messages-badge');
+                            messagesBadge.textContent = data.unreadCount;
+                            messagesBadge.style.display = 'flex';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error checking unread messages:', error);
+                    });
+            }
+
+            // Event Listeners
+            if (mentorshipSwitch) {
+                mentorshipSwitch.addEventListener('change', function() {
+                    if (this.checked) {
+                        mentorshipDetails.style.display = 'block';
+                    } else {
+                        mentorshipDetails.style.display = 'none';
+                        // If turning off, update immediately
+                        updateMentorshipStatus(user.id, false, '');
+                    }
+                });
+            }
+
+            if (saveMentorshipBtn) {
+                saveMentorshipBtn.addEventListener('click', function() {
+                    const details = mentorshipText.value.trim();
+                    updateMentorshipStatus(user.id, true, details);
+                });
+            }
+
+            if (logoutLink) {
+                logoutLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    // Clear user data from localStorage
+                    localStorage.removeItem('user');
+
+                    // Show notification
+                    showNotification(true, 'You have been logged out successfully.');
+
+                    // Redirect to home page after a delay
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+                });
+            }
+
+            // Functions
+            function fetchMentorshipStatus(userId) {
+                // Fetch the user's professional info to get mentorship status
+                fetch(`/api/available-mentors`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Find the current user's info
+                            const userInfo = data.mentors.find(mentor =>
+                                mentor.user && mentor.user._id === userId);
+
+                            if (userInfo) {
+                                // Update the UI
+                                mentorshipSwitch.checked = true;
+                                mentorshipDetails.style.display = 'block';
+                                mentorshipText.value = userInfo.mentorshipDetails || '';
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching mentorship status:', error);
+                    });
+            }
+
+            function updateMentorshipStatus(userId, available, details) {
+                fetch('/api/toggle-mentorship', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: userId,
+                        availableForMentorship: available,
+                        mentorshipDetails: details
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification(true, 'Mentorship status updated successfully!');
+                        // Refresh the mentors list
+                        fetchAvailableMentors();
+                    } else {
+                        showNotification(false, data.message || 'Error updating mentorship status');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating mentorship status:', error);
+                    showNotification(false, 'Error connecting to server');
+                });
+            }
+
+            function fetchAvailableMentors() {
+                fetch('/api/available-mentors')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            renderMentorsList(data.mentors);
+                        } else {
+                            mentorsList.innerHTML = '<p>Error loading mentors: ' + (data.message || 'Unknown error') + '</p>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching mentors:', error);
+                        mentorsList.innerHTML = '<p>Error connecting to server</p>';
+                    });
+            }
+
+            function renderMentorsList(mentors) {
+                if (!mentors || mentors.length === 0) {
+                    mentorsList.innerHTML = '<p>No mentors or collaborators available at the moment.</p>';
+                    return;
+                }
+
+                // Filter out the current user from the mentors list
+                const currentUserId = user ? user.id : null;
+                const filteredMentors = mentors.filter(mentor =>
+                    mentor.user && mentor.user._id !== currentUserId
+                );
+
+                if (filteredMentors.length === 0) {
+                    mentorsList.innerHTML = '<p>No other mentors or collaborators available at the moment.</p>';
+                    return;
+                }
+
+                let html = '';
+
+                filteredMentors.forEach(mentor => {
+                    const mentorUser = mentor.user;
+                    if (!mentorUser) return; // Skip if user data is missing
+
+                    const fullName = `${mentorUser.firstName || ''} ${mentorUser.lastName || ''}`.trim() || mentorUser.username;
+                    const initials = getInitials(mentorUser.firstName, mentorUser.lastName, mentorUser.username);
+                    const details = mentor.mentorshipDetails || 'Available for mentorship and collaboration';
+                    const position = mentor.fieldOfWork ? `${mentor.fieldOfWork}` : '';
+                    const company = mentor.companyName ? ` at ${mentor.companyName}` : '';
+
+                    html += `
+                    <div class="mentor-card">
+                        <div class="mentor-header">
+                            <div class="mentor-avatar">${initials}</div>
+                            <div class="mentor-info">
+                                <h4>${fullName}</h4>
+                                <p>${position}${company}</p>
+                            </div>
+                        </div>
+                        <div class="mentor-details">
+                            <p>${details}</p>
+                        </div>
+                        <div class="mentor-actions">
+                            <button class="btn btn-primary connect-btn" data-mentor-id="${mentorUser._id}">Connect</button>
+                        </div>
+                    </div>
+                    `;
+                });
+
+                mentorsList.innerHTML = html;
+
+                // Add event listeners to connect buttons
+                document.querySelectorAll('.connect-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const mentorId = this.getAttribute('data-mentor-id');
+                        sendConnectionRequest(mentorId);
+                    });
+                });
+            }
+
+            function getInitials(firstName, lastName, username) {
+                if (firstName && lastName) {
+                    return `${firstName.charAt(0)}${lastName.charAt(0)}`;
+                } else if (firstName) {
+                    return firstName.charAt(0);
+                } else if (username) {
+                    return username.charAt(0).toUpperCase();
+                } else {
+                    return '<i class="fas fa-user"></i>';
+                }
+            }
+
+            function sendConnectionRequest(mentorId) {
+                if (!user) {
+                    showNotification(false, 'You must be logged in to send connection requests');
+                    return;
+                }
+
+                // Find the button that was clicked and update its text/state
+                const button = document.querySelector(`.connect-btn[data-mentor-id="${mentorId}"]`);
+                if (button) {
+                    const originalText = button.textContent;
+                    button.textContent = 'Sending...';
+                    button.disabled = true;
+
+                    // Send the connection request via API
+                    fetch('/api/connection-request', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            fromUserId: user.id,
+                            toUserId: mentorId
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            button.textContent = 'Request Sent';
+                            button.classList.remove('btn-primary');
+                            button.classList.add('btn-outline');
+                            button.disabled = true;
+                            showNotification(true, 'Connection request sent successfully!');
+                        } else {
+                            button.textContent = originalText;
+                            button.disabled = false;
+                            showNotification(false, data.message || 'Error sending connection request');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error sending connection request:', error);
+                        button.textContent = originalText;
+                        button.disabled = false;
+                        showNotification(false, 'Error connecting to server');
+                    });
+                }
+            }
+
+            function showNotification(isSuccess, message) {
+                const notification = document.getElementById('notification');
+                notification.textContent = message;
+                notification.className = 'notification ' + (isSuccess ? 'success' : 'error');
+                notification.classList.add('show');
+
+                // Hide after 3 seconds
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+        });
+    </script>
 </body>
 </html>

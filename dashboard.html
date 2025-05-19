@@ -276,11 +276,164 @@
             cursor: pointer;
         }
 
+        /* Badge for notification count */
+        .badge {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        .network-link {
+            position: relative;
+        }
+
         /* Responsive styles */
         @media (max-width: 768px) {
             .dashboard-grid {
                 grid-template-columns: 1fr;
             }
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            animation: modalFadeIn 0.3s;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: var(--text-color);
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* Profile picture upload styles */
+        .upload-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .preview-container {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--accent-color);
+            border: 1px solid var(--border-color);
+        }
+
+        .profile-pic-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: var(--primary-color);
+        }
+
+        .upload-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .profile-avatar {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .edit-avatar-btn {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            border: 2px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            cursor: pointer;
+            padding: 0;
+            transition: all 0.2s ease;
+        }
+
+        .edit-avatar-btn:hover {
+            background-color: var(--primary-color-dark);
+            transform: scale(1.1);
         }
     </style>
 </head>
@@ -294,9 +447,9 @@
             <nav>
                 <ul class="nav-links">
                     <li><a href="dashboard.html" class="active">Dashboard</a></li>
-                    <li><a href="#">Network</a></li>
+                    <li><a href="network.html" class="network-link">Network <span id="network-badge" class="badge" style="display: none;">0</span></a></li>
                     <li><a href="#">Jobs</a></li>
-                    <li><a href="#">Messaging</a></li>
+                    <li><a href="messages.html" class="messages-link">Messaging <span id="messages-badge" class="badge" style="display: none;">0</span></a></li>
                     <li><a href="#">Notifications</a></li>
                 </ul>
                 <div class="user-dropdown">
@@ -333,6 +486,9 @@
                     <div class="profile-header">
                         <div class="profile-avatar" id="profile-avatar">
                             <i class="fas fa-user"></i>
+                            <button class="edit-avatar-btn" id="edit-profile-pic" title="Change profile picture">
+                                <i class="fas fa-camera"></i>
+                            </button>
                         </div>
                         <div class="profile-info">
                             <h2 id="profile-name">User Name</h2>
@@ -374,6 +530,17 @@
                         </div>
                     </div>
 
+                    <!-- Connection Requests -->
+                    <div class="content-card">
+                        <h2><i class="fas fa-user-plus"></i> Connection Requests <span id="request-count" class="badge" style="display: none;">0</span></h2>
+                        <div id="connection-requests-container">
+                            <div class="loading">Loading connection requests...</div>
+                        </div>
+                        <div class="view-all-link" style="margin-top: 15px; text-align: right;">
+                            <a href="network.html" class="btn btn-outline">View All in Network</a>
+                        </div>
+                    </div>
+
                     <!-- Recommended Connections -->
                     <div class="content-card">
                         <h2><i class="fas fa-users"></i> People You May Know</h2>
@@ -387,21 +554,12 @@
                                     <p>Senior Developer at Tech Solutions</p>
                                 </div>
                                 <div class="connection-action">
-                                    <button class="btn btn-secondary">Connect</button>
+                                    <a href="index.html#mentorship-section" class="btn btn-secondary">Find Mentors</a>
                                 </div>
                             </div>
-                            <div class="connection-item">
-                                <div class="connection-avatar">
-                                    <i class="fas fa-user"></i>
-                                </div>
-                                <div class="connection-info">
-                                    <h3>Michael Chen</h3>
-                                    <p>Product Manager at Innovation Labs</p>
-                                </div>
-                                <div class="connection-action">
-                                    <button class="btn btn-secondary">Connect</button>
-                                </div>
-                            </div>
+                        </div>
+                        <div class="view-all-link" style="margin-top: 15px; text-align: right;">
+                            <a href="index.html#mentorship-section" class="btn btn-outline">Find More Connections</a>
                         </div>
                     </div>
                 </div>
@@ -455,6 +613,39 @@
         </div>
     </footer>
 
+    <!-- Profile Picture Upload Modal -->
+    <div class="modal" id="profile-pic-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Update Profile Picture</h3>
+                <button class="close-modal" id="close-profile-pic-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="upload-container">
+                    <div class="preview-container">
+                        <img id="profile-pic-preview" src="#" alt="Preview" style="display: none; max-width: 100%; max-height: 200px; border-radius: 50%;">
+                        <div id="profile-pic-placeholder" class="profile-pic-placeholder">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    </div>
+                    <div class="upload-actions">
+                        <label for="profile-pic-input" class="btn btn-primary">
+                            <i class="fas fa-upload"></i> Select Image
+                        </label>
+                        <input type="file" id="profile-pic-input" accept="image/*" style="display: none;">
+                        <button id="remove-profile-pic" class="btn btn-secondary" style="display: none;">
+                            <i class="fas fa-trash"></i> Remove
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="save-profile-pic" class="btn btn-primary">Save</button>
+                <button id="cancel-profile-pic" class="btn btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Notification Container -->
     <div id="notification-container" style="display: none; position: fixed; top: 20px; right: 20px; max-width: 350px; padding: 15px 20px; border-radius: 5px; color: white; z-index: 1000; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"></div>
 
@@ -480,13 +671,29 @@
             // Set profile title based on available data
             document.getElementById('profile-title').textContent = 'ConnectPro Member';
 
-            // Set avatar initials
-            const avatarElement = document.getElementById('profile-avatar');
-            const userInitials = getInitials(user.firstName, user.lastName, user.username);
-            avatarElement.innerHTML = userInitials;
+            // Initialize profile picture functionality
+            initProfilePicture();
 
-            // Also update the header avatar
-            document.getElementById('user-avatar').innerHTML = userInitials;
+            // Load profile picture or set initials if none exists
+            const profilePic = localStorage.getItem('profilePicture');
+            if (profilePic) {
+                updateProfilePictureUI(profilePic);
+            } else {
+                // Set avatar initials
+                const userInitials = getInitials(user.firstName, user.lastName, user.username);
+
+                // Update profile avatar with initials and edit button
+                const avatarElement = document.getElementById('profile-avatar');
+                avatarElement.innerHTML = userInitials +
+                    '<button class="edit-avatar-btn" id="edit-profile-pic" title="Change profile picture">' +
+                    '<i class="fas fa-camera"></i></button>';
+
+                // Also update the header avatar
+                document.getElementById('user-avatar').innerHTML = userInitials;
+            }
+
+            // Load connection requests
+            loadConnectionRequests(user.id);
 
             // Handle logout
             document.getElementById('logout-link').addEventListener('click', function(e) {
@@ -503,6 +710,170 @@
                     window.location.href = 'index.html';
                 }, 2000);
             });
+
+            // Function to load connection requests
+            function loadConnectionRequests(userId) {
+                const requestsContainer = document.getElementById('connection-requests-container');
+                const networkBadge = document.getElementById('network-badge');
+                const requestCount = document.getElementById('request-count');
+
+                fetch(`/api/connection-requests/${userId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update badge count
+                            if (data.connectionRequests.length > 0) {
+                                networkBadge.textContent = data.connectionRequests.length;
+                                networkBadge.style.display = 'flex';
+                                requestCount.textContent = data.connectionRequests.length;
+                                requestCount.style.display = 'flex';
+
+                                // Display up to 3 requests in the dashboard
+                                const displayRequests = data.connectionRequests.slice(0, 3);
+                                let html = '';
+
+                                displayRequests.forEach(request => {
+                                    const fromUser = request.fromUser;
+                                    if (!fromUser) return;
+
+                                    const fullName = `${fromUser.firstName || ''} ${fromUser.lastName || ''}`.trim() || fromUser.username;
+                                    const initials = getInitials(fromUser.firstName, fromUser.lastName, fromUser.username);
+                                    const requestDate = new Date(request.createdAt).toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'short',
+                                        day: 'numeric'
+                                    });
+
+                                    html += `
+                                    <div class="connection-item" data-request-id="${request._id}">
+                                        <div class="connection-avatar">${initials}</div>
+                                        <div class="connection-info">
+                                            <h3>${fullName}</h3>
+                                            <p>Wants to connect with you</p>
+                                            <span class="activity-time">Request received on ${requestDate}</span>
+                                        </div>
+                                        <div class="connection-action">
+                                            <button class="btn btn-primary accept-request" data-request-id="${request._id}">Accept</button>
+                                        </div>
+                                    </div>
+                                    `;
+                                });
+
+                                if (data.connectionRequests.length > 3) {
+                                    html += `<p style="text-align: center; margin-top: 15px;">And ${data.connectionRequests.length - 3} more request(s). <a href="network.html">View all</a></p>`;
+                                }
+
+                                requestsContainer.innerHTML = html;
+
+                                // Add event listeners to accept buttons
+                                document.querySelectorAll('.accept-request').forEach(button => {
+                                    button.addEventListener('click', function() {
+                                        const requestId = this.getAttribute('data-request-id');
+                                        acceptConnectionRequest(requestId);
+                                    });
+                                });
+                            } else {
+                                networkBadge.style.display = 'none';
+                                requestCount.style.display = 'none';
+                                requestsContainer.innerHTML = `<p>You don't have any pending connection requests.</p>`;
+                            }
+                        } else {
+                            requestsContainer.innerHTML = `<p>Error loading connection requests: ${data.message || 'Unknown error'}</p>`;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching connection requests:', error);
+                        requestsContainer.innerHTML = `<p>Error connecting to server</p>`;
+                    });
+            }
+
+            // Function to accept a connection request
+            function acceptConnectionRequest(requestId) {
+                const item = document.querySelector(`.connection-item[data-request-id="${requestId}"]`);
+                const acceptBtn = item.querySelector('.accept-request');
+
+                // Disable button while processing
+                if (acceptBtn) {
+                    acceptBtn.disabled = true;
+                    acceptBtn.textContent = 'Accepting...';
+                }
+
+                fetch(`/api/connection-request/${requestId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: 'accepted' })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Show success message
+                        showNotification(true, 'Connection request accepted successfully');
+
+                        // Remove the item with animation
+                        item.style.opacity = '0';
+                        item.style.transform = 'translateY(-20px)';
+                        item.style.transition = 'opacity 0.3s, transform 0.3s';
+
+                        setTimeout(() => {
+                            item.remove();
+
+                            // Update badge count
+                            const networkBadge = document.getElementById('network-badge');
+                            const requestCount = document.getElementById('request-count');
+                            const currentCount = parseInt(networkBadge.textContent);
+
+                            if (currentCount > 1) {
+                                const newCount = currentCount - 1;
+                                networkBadge.textContent = newCount;
+                                requestCount.textContent = newCount;
+                            } else {
+                                networkBadge.style.display = 'none';
+                                requestCount.style.display = 'none';
+                                document.getElementById('connection-requests-container').innerHTML = `<p>You don't have any pending connection requests.</p>`;
+                            }
+
+                            // Show a message about the new connection
+                            const connectionName = item.querySelector('.connection-info h3').textContent;
+                            showNotification(true, `You are now connected with ${connectionName}. You can message them from the Network page.`);
+
+                            // Add a link to view connections
+                            const viewConnectionsLink = document.createElement('div');
+                            viewConnectionsLink.className = 'view-all-link';
+                            viewConnectionsLink.style.marginTop = '15px';
+                            viewConnectionsLink.style.textAlign = 'center';
+                            viewConnectionsLink.innerHTML = `
+                                <a href="network.html" class="btn btn-primary">View Your Connections</a>
+                            `;
+
+                            const container = document.getElementById('connection-requests-container');
+                            if (container.querySelector('p')) {
+                                container.appendChild(viewConnectionsLink);
+                            }
+                        }, 300);
+                    } else {
+                        // Show error message
+                        showNotification(false, data.message || 'Error accepting connection request');
+
+                        // Re-enable button
+                        if (acceptBtn) {
+                            acceptBtn.disabled = false;
+                            acceptBtn.textContent = 'Accept';
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error accepting connection request:', error);
+                    showNotification(false, 'Error connecting to server');
+
+                    // Re-enable button
+                    if (acceptBtn) {
+                        acceptBtn.disabled = false;
+                        acceptBtn.textContent = 'Accept';
+                    }
+                });
+            }
 
             // Function to get user initials
             function getInitials(firstName, lastName, username) {
@@ -536,6 +907,179 @@
                 setTimeout(() => {
                     notificationContainer.style.display = 'none';
                 }, 5000);
+            }
+
+            // Profile Picture Functionality
+            function initProfilePicture() {
+                const profilePicModal = document.getElementById('profile-pic-modal');
+                const editProfilePicBtn = document.getElementById('edit-profile-pic');
+                const closeProfilePicModal = document.getElementById('close-profile-pic-modal');
+                const profilePicInput = document.getElementById('profile-pic-input');
+                const profilePicPreview = document.getElementById('profile-pic-preview');
+                const profilePicPlaceholder = document.getElementById('profile-pic-placeholder');
+                const removeProfilePicBtn = document.getElementById('remove-profile-pic');
+                const saveProfilePicBtn = document.getElementById('save-profile-pic');
+                const cancelProfilePicBtn = document.getElementById('cancel-profile-pic');
+
+                // Load existing profile picture if available
+                loadProfilePicture();
+
+                // Open modal when edit button is clicked
+                document.addEventListener('click', function(e) {
+                    if (e.target.closest('#edit-profile-pic')) {
+                        profilePicModal.style.display = 'flex';
+                    }
+                });
+
+                // Close modal when close button is clicked
+                closeProfilePicModal.addEventListener('click', function() {
+                    profilePicModal.style.display = 'none';
+                });
+
+                // Close modal when cancel button is clicked
+                cancelProfilePicBtn.addEventListener('click', function() {
+                    profilePicModal.style.display = 'none';
+                    resetProfilePicPreview();
+                });
+
+                // Handle file selection
+                profilePicInput.addEventListener('change', function(e) {
+                    if (e.target.files && e.target.files[0]) {
+                        const file = e.target.files[0];
+
+                        // Check file type
+                        if (!file.type.match('image.*')) {
+                            showNotification(false, 'Please select an image file');
+                            return;
+                        }
+
+                        // Check file size (max 5MB)
+                        if (file.size > 5 * 1024 * 1024) {
+                            showNotification(false, 'Image size should be less than 5MB');
+                            return;
+                        }
+
+                        const reader = new FileReader();
+
+                        reader.onload = function(e) {
+                            profilePicPreview.src = e.target.result;
+                            profilePicPreview.style.display = 'block';
+                            profilePicPlaceholder.style.display = 'none';
+                            removeProfilePicBtn.style.display = 'block';
+                        };
+
+                        reader.readAsDataURL(file);
+                    }
+                });
+
+                // Handle remove button click
+                removeProfilePicBtn.addEventListener('click', function() {
+                    resetProfilePicPreview();
+                });
+
+                // Handle save button click
+                saveProfilePicBtn.addEventListener('click', function() {
+                    const profilePic = profilePicPreview.src;
+
+                    if (profilePic && profilePic !== '#') {
+                        // Save to localStorage
+                        saveProfilePictureToStorage(profilePic);
+
+                        // Update UI
+                        updateProfilePictureUI(profilePic);
+
+                        // Close modal
+                        profilePicModal.style.display = 'none';
+
+                        showNotification(true, 'Profile picture updated successfully');
+                    } else if (profilePicPlaceholder.style.display !== 'none') {
+                        // User wants to remove profile picture
+                        localStorage.removeItem('profilePicture');
+
+                        // Update UI to show initials
+                        updateProfilePictureUI(null);
+
+                        // Close modal
+                        profilePicModal.style.display = 'none';
+
+                        showNotification(true, 'Profile picture removed');
+                    }
+                });
+
+                // Reset preview
+                function resetProfilePicPreview() {
+                    profilePicInput.value = '';
+                    profilePicPreview.src = '#';
+                    profilePicPreview.style.display = 'none';
+                    profilePicPlaceholder.style.display = 'flex';
+                    removeProfilePicBtn.style.display = 'none';
+                }
+
+                // Load profile picture from storage
+                function loadProfilePicture() {
+                    const profilePic = localStorage.getItem('profilePicture');
+
+                    if (profilePic) {
+                        updateProfilePictureUI(profilePic);
+
+                        // Update preview in modal
+                        profilePicPreview.src = profilePic;
+                        profilePicPreview.style.display = 'block';
+                        profilePicPlaceholder.style.display = 'none';
+                        removeProfilePicBtn.style.display = 'block';
+                    }
+                }
+            }
+
+            // Save profile picture to storage
+            function saveProfilePictureToStorage(profilePic) {
+                localStorage.setItem('profilePicture', profilePic);
+            }
+
+            // Update UI with profile picture
+            function updateProfilePictureUI(profilePic) {
+                // Update all user avatars in the UI
+                const userAvatars = [
+                    document.getElementById('user-avatar'),
+                    document.getElementById('profile-avatar')
+                ];
+
+                userAvatars.forEach(avatar => {
+                    if (avatar) {
+                        if (profilePic) {
+                            // Create or update img element
+                            let img = avatar.querySelector('img');
+                            if (!img) {
+                                img = document.createElement('img');
+                                avatar.innerHTML = '';
+                                avatar.appendChild(img);
+                            }
+                            img.src = profilePic;
+
+                            // Add edit button to profile avatar
+                            if (avatar.id === 'profile-avatar') {
+                                const editBtn = document.createElement('button');
+                                editBtn.className = 'edit-avatar-btn';
+                                editBtn.id = 'edit-profile-pic';
+                                editBtn.title = 'Change profile picture';
+                                editBtn.innerHTML = '<i class="fas fa-camera"></i>';
+                                avatar.appendChild(editBtn);
+                            }
+                        } else {
+                            // Show initials
+                            const userData = JSON.parse(localStorage.getItem('user'));
+                            const initials = getInitials(userData.firstName, userData.lastName, userData.username);
+
+                            if (avatar.id === 'profile-avatar') {
+                                avatar.innerHTML = initials +
+                                    '<button class="edit-avatar-btn" id="edit-profile-pic" title="Change profile picture">' +
+                                    '<i class="fas fa-camera"></i></button>';
+                            } else {
+                                avatar.innerHTML = initials;
+                            }
+                        }
+                    }
+                });
             }
         });
     </script>

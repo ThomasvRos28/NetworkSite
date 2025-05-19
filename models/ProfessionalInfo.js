@@ -17,6 +17,23 @@ const ProfessionalInfoSchema = new mongoose.Schema({
   fieldOfWork: {
     type: String,
     trim: true
+  },
+  country: {
+    type: String,
+    trim: true
+  },
+  location: {
+    type: String,
+    trim: true
+  },
+  availableForMentorship: {
+    type: Boolean,
+    default: false
+  },
+  mentorshipDetails: {
+    type: String,
+    trim: true,
+    default: ''
   }
 });
 

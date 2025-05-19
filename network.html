@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network - ConnectPro</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Additional styles for the network page */
+        .network-container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .network-header {
+            margin-bottom: 30px;
+        }
+
+        .network-header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            color: var(--text-color);
+        }
+
+        .network-header p {
+            font-size: 1.1rem;
+            color: var(--text-light);
+        }
+
+        .network-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 30px;
+        }
+
+        .tab-item {
+            padding: 15px 25px;
+            font-weight: 500;
+            cursor: pointer;
+            position: relative;
+            color: var(--text-light);
+            transition: color 0.3s ease;
+        }
+
+        .tab-item.active {
+            color: var(--primary-color);
+        }
+
+        .tab-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .connection-card {
+            background-color: var(--white);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .connection-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+
+        .connection-info {
+            flex-grow: 1;
+        }
+
+        .connection-info h3 {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+            color: var(--text-color);
+        }
+
+        .connection-info p {
+            color: var(--text-light);
+            margin-bottom: 5px;
+        }
+
+        .connection-info .connection-time {
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+
+        .connection-actions {
+            display: flex;
+            gap: 10px;
+            margin-left: 15px;
+        }
+
+        .connection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .connection-grid .connection-card {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .connection-grid .connection-avatar {
+            width: 80px;
+            height: 80px;
+            font-size: 2rem;
+            margin: 0 auto 15px;
+        }
+
+        .connection-grid .connection-actions {
+            margin-left: 0;
+            margin-top: 15px;
+            justify-content: center;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: var(--text-color);
+        }
+
+        .empty-state p {
+            color: var(--text-light);
+            margin-bottom: 20px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Badge for notification count */
+        .badge {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        /* Notification styles */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 4px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        .notification.success {
+            background-color: #4CAF50;
+        }
+
+        .notification.error {
+            background-color: #F44336;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .connection-actions {
+                flex-direction: column;
+            }
+
+            .connection-card {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .connection-avatar {
+                margin: 0 auto 15px;
+            }
+
+            .connection-actions {
+                margin-left: 0;
+                margin-top: 15px;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1><a href="dashboard.html">ConnectPro</a></h1>
+            </div>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="network.html" class="active">Network</a></li>
+                    <li><a href="#">Jobs</a></li>
+                    <li><a href="messages.html" class="messages-link">Messaging <span id="messages-badge" class="badge" style="display: none;">0</span></a></li>
+                    <li><a href="#">Notifications</a></li>
+                </ul>
+                <div class="user-dropdown">
+                    <div class="user-avatar" id="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-dropdown-content">
+                        <a href="#"><i class="fas fa-user-circle"></i> View Profile</a>
+                        <a href="#"><i class="fas fa-cog"></i> Settings</a>
+                        <div class="divider"></div>
+                        <a href="#" id="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </div>
+                </div>
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Network Content -->
+    <section class="network-section">
+        <div class="network-container">
+            <div class="network-header">
+                <h1>Your Professional Network</h1>
+                <p>Manage your connections and connection requests</p>
+            </div>
+
+            <div class="network-tabs">
+                <div class="tab-item active" data-tab="pending-requests">
+                    Pending Requests <span id="pending-count" class="badge" style="display: none;">0</span>
+                </div>
+                <div class="tab-item" data-tab="connections">
+                    Connections
+                </div>
+                <div class="tab-item" data-tab="find-connections">
+                    Find Connections
+                </div>
+            </div>
+
+            <div class="tab-content active" id="pending-requests">
+                <div id="pending-requests-container">
+                    <!-- Pending requests will be loaded here -->
+                    <div class="loading">Loading pending requests...</div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="connections">
+                <div id="connections-container">
+                    <!-- Connections will be loaded here -->
+                    <div class="loading">Loading your connections...</div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="find-connections">
+                <div id="find-connections-container">
+                    <!-- Connection suggestions will be loaded here -->
+                    <div class="loading">Loading connection suggestions...</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-column">
+                    <h3>ConnectPro</h3>
+                    <p>The professional networking platform designed to help you connect, collaborate, and grow.</p>
+                    <div class="social-icons">
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Careers</a></li>
+                        <li><a href="#">Press</a></li>
+                        <li><a href="#">Blog</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Community Guidelines</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Contact</h4>
+                    <ul>
+                        <li><a href="mailto:info@connectpro.com">info@connectpro.com</a></li>
+                        <li><a href="tel:+1234567890">+1 (234) 567-890</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2023 ConnectPro. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in
+            const userData = localStorage.getItem('user');
+
+            if (!userData) {
+                // User is not logged in, redirect to signin page
+                window.location.href = 'signin.html';
+                return;
+            }
+
+            // Parse user data
+            const user = JSON.parse(userData);
+
+            // Set user avatar
+            const userAvatar = document.getElementById('user-avatar');
+            userAvatar.innerHTML = getInitials(user.firstName, user.lastName, user.username);
+
+            // Handle logout
+            document.getElementById('logout-link').addEventListener('click', function(e) {
+                e.preventDefault();
+                localStorage.removeItem('user');
+                showNotification(true, 'You have been logged out successfully.');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 2000);
+            });
+
+            // Tab functionality
+            const tabItems = document.querySelectorAll('.tab-item');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+
+                    // Remove active class from all tabs and contents
+                    tabItems.forEach(tab => tab.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+
+                    // Add active class to clicked tab and corresponding content
+                    this.classList.add('active');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+
+            // Load pending connection requests
+            loadPendingRequests();
+
+            // Load connections
+            loadConnections();
+
+            // Load connection suggestions
+            loadConnectionSuggestions();
+
+            // Function to load pending connection requests
+            function loadPendingRequests() {
+                const pendingRequestsContainer = document.getElementById('pending-requests-container');
+                pendingRequestsContainer.innerHTML = '<div class="loading">Loading pending requests...</div>';
+
+                fetch(`/api/connection-requests/${user.id}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            renderPendingRequests(data.connectionRequests);
+
+                            // Update badge count
+                            const pendingCount = document.getElementById('pending-count');
+                            if (data.connectionRequests.length > 0) {
+                                pendingCount.textContent = data.connectionRequests.length;
+                                pendingCount.style.display = 'flex';
+                            } else {
+                                pendingCount.style.display = 'none';
+                            }
+                        } else {
+                            pendingRequestsContainer.innerHTML = `<div class="empty-state">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <h3>Error Loading Requests</h3>
+                                <p>${data.message || 'There was an error loading your connection requests.'}</p>
+                            </div>`;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching connection requests:', error);
+                        pendingRequestsContainer.innerHTML = `<div class="empty-state">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <h3>Error Loading Requests</h3>
+                            <p>There was an error connecting to the server. Please try again later.</p>
+                        </div>`;
+                    });
+            }
+
+            // Function to render pending connection requests
+            function renderPendingRequests(requests) {
+                const pendingRequestsContainer = document.getElementById('pending-requests-container');
+
+                if (!requests || requests.length === 0) {
+                    pendingRequestsContainer.innerHTML = `<div class="empty-state">
+                        <i class="fas fa-user-friends"></i>
+                        <h3>No Pending Requests</h3>
+                        <p>You don't have any pending connection requests at the moment.</p>
+                    </div>`;
+                    return;
+                }
+
+                let html = '';
+
+                requests.forEach(request => {
+                    const fromUser = request.fromUser;
+                    if (!fromUser) return;
+
+                    const fullName = `${fromUser.firstName || ''} ${fromUser.lastName || ''}`.trim() || fromUser.username;
+                    const initials = getInitials(fromUser.firstName, fromUser.lastName, fromUser.username);
+                    const requestDate = new Date(request.createdAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    });
+
+                    html += `
+                    <div class="connection-card" data-request-id="${request._id}">
+                        <div class="connection-avatar">${initials}</div>
+                        <div class="connection-info">
+                            <h3>${fullName}</h3>
+                            <p>Wants to connect with you</p>
+                            <span class="connection-time">Request received on ${requestDate}</span>
+                        </div>
+                        <div class="connection-actions">
+                            <button class="btn btn-primary accept-request" data-request-id="${request._id}">Accept</button>
+                            <button class="btn btn-outline reject-request" data-request-id="${request._id}">Decline</button>
+                        </div>
+                    </div>
+                    `;
+                });
+
+                pendingRequestsContainer.innerHTML = html;
+
+                // Add event listeners to accept/reject buttons
+                document.querySelectorAll('.accept-request').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const requestId = this.getAttribute('data-request-id');
+                        updateConnectionRequest(requestId, 'accepted');
+                    });
+                });
+
+                document.querySelectorAll('.reject-request').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const requestId = this.getAttribute('data-request-id');
+                        updateConnectionRequest(requestId, 'rejected');
+                    });
+                });
+            }
+
+            // Function to update connection request status
+            function updateConnectionRequest(requestId, status) {
+                const card = document.querySelector(`.connection-card[data-request-id="${requestId}"]`);
+                const acceptBtn = card.querySelector('.accept-request');
+                const rejectBtn = card.querySelector('.reject-request');
+
+                // Disable buttons while processing
+                if (acceptBtn) acceptBtn.disabled = true;
+                if (rejectBtn) rejectBtn.disabled = true;
+
+                fetch(`/api/connection-request/${requestId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Show success message
+                        showNotification(true, `Connection request ${status === 'accepted' ? 'accepted' : 'declined'} successfully`);
+
+                        // Remove the card with animation
+                        card.style.opacity = '0';
+                        card.style.transform = 'translateY(-20px)';
+                        card.style.transition = 'opacity 0.3s, transform 0.3s';
+
+                        setTimeout(() => {
+                            card.remove();
+
+                            // Check if there are no more requests
+                            const remainingCards = document.querySelectorAll('.connection-card[data-request-id]');
+                            if (remainingCards.length === 0) {
+                                loadPendingRequests(); // Reload to show empty state
+                            }
+
+                            // If accepted, reload connections and show a message
+                            if (status === 'accepted') {
+                                loadConnections();
+
+                                // Get the name of the person from the card
+                                const connectionName = card.querySelector('.connection-info h3').textContent;
+
+                                // Show a more detailed notification
+                                showNotification(true, `You are now connected with ${connectionName}. You can now message each other!`);
+
+                                // Automatically switch to the connections tab after a short delay
+                                setTimeout(() => {
+                                    document.querySelector('[data-tab="connections"]').click();
+                                }, 1500);
+                            }
+                        }, 300);
+
+                        // Update badge count
+                        const pendingCount = document.getElementById('pending-count');
+                        const currentCount = parseInt(pendingCount.textContent);
+                        if (currentCount > 1) {
+                            pendingCount.textContent = currentCount - 1;
+                        } else {
+                            pendingCount.style.display = 'none';
+                        }
+                    } else {
+                        // Show error message
+                        showNotification(false, data.message || 'Error updating connection request');
+
+                        // Re-enable buttons
+                        if (acceptBtn) acceptBtn.disabled = false;
+                        if (rejectBtn) rejectBtn.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating connection request:', error);
+                    showNotification(false, 'Error connecting to server');
+
+                    // Re-enable buttons
+                    if (acceptBtn) acceptBtn.disabled = false;
+                    if (rejectBtn) rejectBtn.disabled = false;
+                });
+            }
+
+            // Function to load connections
+            function loadConnections() {
+                const connectionsContainer = document.getElementById('connections-container');
+                connectionsContainer.innerHTML = '<div class="loading">Loading your connections...</div>';
+
+                fetch(`/api/connections/${user.id}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            renderConnections(data.connections);
+                        } else {
+                            connectionsContainer.innerHTML = `<div class="empty-state">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <h3>Error Loading Connections</h3>
+                                <p>${data.message || 'There was an error loading your connections.'}</p>
+                            </div>`;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching connections:', error);
+                        connectionsContainer.innerHTML = `<div class="empty-state">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <h3>Error Loading Connections</h3>
+                            <p>There was an error connecting to the server. Please try again later.</p>
+                        </div>`;
+                    });
+            }
+
+            // Function to render connections
+            function renderConnections(connections) {
+                const connectionsContainer = document.getElementById('connections-container');
+
+                if (!connections || connections.length === 0) {
+                    connectionsContainer.innerHTML = `<div class="empty-state">
+                        <i class="fas fa-user-friends"></i>
+                        <h3>No Connections Yet</h3>
+                        <p>You haven't connected with anyone yet. Start by accepting connection requests or finding new connections.</p>
+                        <button class="btn btn-primary" onclick="document.querySelector('[data-tab=\'find-connections\']').click()">Find Connections</button>
+                    </div>`;
+                    return;
+                }
+
+                // Create a grid layout for connections
+                let html = '<div class="connection-grid">';
+
+                connections.forEach(connection => {
+                    const fullName = connection.fullName;
+                    const initials = getInitials(connection.firstName, connection.lastName, connection.username);
+                    const position = connection.fieldOfWork ? connection.fieldOfWork : 'ConnectPro Member';
+                    const company = connection.companyName ? ` at ${connection.companyName}` : '';
+
+                    html += `
+                    <div class="connection-card">
+                        <div class="connection-avatar">${initials}</div>
+                        <h3>${fullName}</h3>
+                        <p>${position}${company}</p>
+                        <div class="connection-actions">
+                            <a href="messages.html?conversation=${connection.id}" class="btn btn-primary">Message</a>
+                            <button class="btn btn-outline view-profile" data-user-id="${connection.id}">View Profile</button>
+                        </div>
+                    </div>
+                    `;
+                });
+
+                html += '</div>';
+                connectionsContainer.innerHTML = html;
+
+                // Add event listeners to view profile buttons
+                document.querySelectorAll('.view-profile').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const userId = this.getAttribute('data-user-id');
+                        // In a real app, this would navigate to the user's profile
+                        showNotification(true, 'Profile viewing will be implemented in a future update');
+                    });
+                });
+            }
+
+            // Function to load connection suggestions
+            function loadConnectionSuggestions() {
+                const findConnectionsContainer = document.getElementById('find-connections-container');
+                findConnectionsContainer.innerHTML = '<div class="loading">Loading connection suggestions...</div>';
+
+                // For now, just show a message to go to the mentorship section
+                setTimeout(() => {
+                    findConnectionsContainer.innerHTML = `<div class="empty-state">
+                        <i class="fas fa-users"></i>
+                        <h3>Find Mentors & Collaborators</h3>
+                        <p>Visit the Mentorship section on the home page to find professionals available for mentorship and collaboration.</p>
+                        <a href="index.html#mentorship-section" class="btn btn-primary">Find Mentors</a>
+                    </div>`;
+                }, 1000);
+            }
+
+            // Function to get user initials
+            function getInitials(firstName, lastName, username) {
+                if (firstName && lastName) {
+                    return `${firstName.charAt(0)}${lastName.charAt(0)}`;
+                } else if (firstName) {
+                    return firstName.charAt(0);
+                } else if (username) {
+                    return username.charAt(0).toUpperCase();
+                } else {
+                    return '<i class="fas fa-user"></i>';
+                }
+            }
+
+            // Function to show notification
+            function showNotification(isSuccess, message) {
+                const notification = document.getElementById('notification');
+                notification.textContent = message;
+                notification.className = 'notification ' + (isSuccess ? 'success' : 'error');
+                notification.classList.add('show');
+
+                // Hide after 3 seconds
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>

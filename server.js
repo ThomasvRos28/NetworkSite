@@ -2,13 +2,24 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
+const http = require('http');
 require('dotenv').config();
 
 // Import routes
 const authRoutes = require('./routes/auth');
+const messageRoutes = require('./routes/messages');
+
+// Import WebSocket server
+const { initWebSocketServer } = require('./websocket-server');
 
 // Initialize Express app
 const app = express();
+
+// Create HTTP server
+const server = http.createServer(app);
+
+// Initialize WebSocket server
+const wss = initWebSocketServer(server);
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI, {
@@ -31,6 +42,7 @@ app.use(express.static(path.join(__dirname, '.')));
 
 // Routes
 app.use('/api', authRoutes);
+app.use('/api/messages', messageRoutes);
 
 // Serve index.html for the root route
 app.get('/', (req, res) => {
@@ -48,6 +60,7 @@ app.use((err, req, res, next) => {
 
 // Start server
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+server.listen(PORT, () => {
+  console.log(`HTTP Server running at http://localhost:${PORT}`);
+  console.log(`WebSocket Server running at ws://localhost:${PORT}`);
 });

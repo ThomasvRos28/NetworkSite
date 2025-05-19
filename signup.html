@@ -275,6 +275,31 @@
                             </div>
 
                             <div class="form-group">
+                                <label for="country">Country</label>
+                                <select id="country" name="country" required>
+                                    <option value="">Select your country</option>
+                                    <option value="United States">United States</option>
+                                    <option value="United Kingdom">United Kingdom</option>
+                                    <option value="Canada">Canada</option>
+                                    <option value="Australia">Australia</option>
+                                    <option value="Germany">Germany</option>
+                                    <option value="France">France</option>
+                                    <option value="India">India</option>
+                                    <option value="Japan">Japan</option>
+                                    <option value="China">China</option>
+                                    <option value="Brazil">Brazil</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                                <div class="form-error" id="country-error">Please select your country</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="location">City/Region</label>
+                                <input type="text" id="location" name="location" placeholder="e.g., New York, London, etc." required>
+                                <div class="form-error" id="location-error">Please enter your city or region</div>
+                            </div>
+
+                            <div class="form-group">
                                 <label for="skills">Skills (Recommended: at least 3)</label>
                                 <div class="skill-hint">Enter skills relevant to your field of work</div>
                                 <div class="skill-container">
@@ -511,6 +536,24 @@
                     document.getElementById('fieldOfWork-error').style.display = 'none';
                 }
 
+                // Validate country
+                const country = document.getElementById('country');
+                if (!country.value) {
+                    document.getElementById('country-error').style.display = 'block';
+                    isValid = false;
+                } else {
+                    document.getElementById('country-error').style.display = 'none';
+                }
+
+                // Validate location
+                const location = document.getElementById('location');
+                if (!location.value.trim()) {
+                    document.getElementById('location-error').style.display = 'block';
+                    isValid = false;
+                } else {
+                    document.getElementById('location-error').style.display = 'none';
+                }
+
                 // Validate skills
                 const skill1 = document.getElementById('skill1');
                 if (!skill1.value.trim()) {
@@ -573,6 +616,8 @@
                         workExperience: document.getElementById('workExperience').value,
                         companyName: document.getElementById('companyName').value,
                         fieldOfWork: document.getElementById('fieldOfWork').value,
+                        country: document.getElementById('country').value,
+                        location: document.getElementById('location').value,
                         skill1: document.getElementById('skill1').value,
                         skill2: document.getElementById('skill2').value,
                         skill3: document.getElementById('skill3').value
