@@ -76,6 +76,13 @@
             background-color: var(--primary-color);
         }
 
+        .card-image .profile-pic {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+
         .card-content {
             padding: 20px;
             flex-grow: 1;
@@ -111,6 +118,20 @@
 
         .card-location i {
             margin-right: 5px;
+        }
+
+        .card-distance {
+            font-size: 0.9rem;
+            color: #4CAF50;
+            margin-top: 5px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+
+        .card-distance i {
+            margin-right: 5px;
+            font-size: 0.8rem;
         }
 
         .swipe-buttons {
@@ -287,6 +308,49 @@
         .match-notification.special-match .btn-outline:hover {
             background-color: rgba(255, 255, 255, 0.2);
         }
+
+        /* Location status styles */
+        .location-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin: 10px auto;
+            padding: 8px 12px;
+            background-color: rgba(0, 0, 0, 0.05);
+            border-radius: 20px;
+            max-width: fit-content;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #2ecc71; /* Green for enabled */
+        }
+
+        .status-indicator.disabled {
+            background-color: #e74c3c; /* Red for disabled */
+        }
+
+        .status-text {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .btn-small {
+            font-size: 0.8rem;
+            padding: 4px 8px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-small:hover {
+            background-color: var(--primary-color-dark);
+        }
     </style>
 </head>
 <body>
@@ -298,12 +362,13 @@
             </div>
             <nav>
                 <ul class="nav-links" id="logged-in-nav" style="display: none;">
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="dashboard.html">Home</a></li>
                     <li><a href="network.html">Network</a></li>
                     <li><a href="discover.html" class="active">Discover</a></li>
                     <li><a href="swipe-history.html">History</a></li>
+                    <li><a href="mentorship.html">Mentorship</a></li>
                     <li><a href="messages.html" class="messages-link" style="display: none;">Messages</a></li>
+                    <li><a href="#">Notifications</a></li>
                 </ul>
                 <ul class="nav-links" id="logged-out-nav">
                     <li><a href="index.html">Home</a></li>
@@ -335,6 +400,13 @@
                 <div class="discover-header">
                     <h1>Discover</h1>
                     <p>Swipe right on professionals you'd like to connect with</p>
+                    <div class="location-status" id="location-status">
+                        <span class="status-indicator"></span>
+                        <span class="status-text">Location sharing is enabled</span>
+                        <button id="update-location-btn" class="btn btn-small">
+                            <i class="fas fa-location-arrow"></i> Update
+                        </button>
+                    </div>
                     <div style="margin-top: 10px; display: flex; gap: 10px; justify-content: center;">
                         <a href="swipe-history.html" class="btn btn-outline" style="font-size: 0.9rem; padding: 8px 15px;">
                             <i class="fas fa-history"></i> View Swipe History
@@ -404,6 +476,9 @@
             let currentCardIndex = 0;
             let potentialMatches = [];
 
+            // Initialize location status
+            initLocationStatus();
+
             // Load potential matches
             loadPotentialMatches();
 
@@ -458,6 +533,9 @@
 
                             // Clear the container
                             cardContainer.innerHTML = '';
+
+                            // Load profile pictures for all users
+                            loadProfilePictures(potentialMatches);
 
                             // Create cards for each potential match
                             potentialMatches.forEach((match, index) => {
@@ -515,15 +593,23 @@
                     details = match.professionalInfo.mentorshipDetails || '';
                 }
 
+                // Try to get the user's profile picture from localStorage
+                const profilePicKey = `profilePicture_${match._id}`;
+                const profilePic = localStorage.getItem(profilePicKey);
+
                 card.innerHTML = `
                     <div class="card-image">
-                        <div class="profile-initials">${initials}</div>
+                        ${profilePic ?
+                            `<img src="${profilePic}" alt="${fullName}" class="profile-pic">` :
+                            `<div class="profile-initials">${initials}</div>`
+                        }
                     </div>
                     <div class="card-content">
                         <div class="card-name">${fullName}</div>
                         <div class="card-position">${position}${company}</div>
                         <div class="card-details">${details}</div>
                         ${location ? `<div class="card-location"><i class="fas fa-map-marker-alt"></i> ${location}</div>` : ''}
+                        ${match.distance ? `<div class="card-distance"><i class="fas fa-location-arrow"></i> ${match.distance} km away</div>` : ''}
                     </div>
                 `;
 
@@ -673,24 +759,45 @@
                     if (data.success) {
                         // If it's a mutual match, show the match notification
                         if (data.mutualMatch) {
+                            // Get the matched user data
+                            const matchedUserData = {
+                                _id: data.matchedUser.id,
+                                firstName: data.matchedUser.name.split(' ')[0] || '',
+                                lastName: data.matchedUser.name.split(' ')[1] || '',
+                                username: data.matchedUser.name
+                            };
+
                             // If this was a blurred profile (someone who already liked you),
                             // show a special message
                             if (isBlurredProfile && action === 'like') {
-                                showMatchNotification(potentialMatches[currentCardIndex], true);
+                                showMatchNotification(matchedUserData, true);
                             } else {
-                                showMatchNotification(potentialMatches[currentCardIndex], false);
+                                showMatchNotification(matchedUserData, false);
+                            }
+
+                            // Show browser notification
+                            if (Notification.permission === 'granted') {
+                                new Notification('New Match!', {
+                                    body: `You and ${data.matchedUser.name} have liked each other.`,
+                                    icon: '/favicon.ico'
+                                });
                             }
                         }
 
-                        // Move to the next card
-                        currentCardIndex++;
+                        // Remove the current card from the DOM after animation completes
+                        setTimeout(() => {
+                            if (currentCard) {
+                                currentCard.remove();
+                            }
 
-                        // If no more cards, show the "no more cards" message
-                        if (currentCardIndex >= potentialMatches.length) {
-                            setTimeout(() => {
+                            // Move to the next card
+                            currentCardIndex++;
+
+                            // If no more cards, show the "no more cards" message
+                            if (currentCardIndex >= potentialMatches.length) {
                                 showNoMoreCards();
-                            }, 300);
-                        }
+                            }
+                        }, 300);
                     } else {
                         console.error('Error recording match action:', data.message);
                         // Reset the card if there was an error
@@ -779,6 +886,160 @@
                     console.error('Error resetting swipe history:', error);
                     alert('Error connecting to server. Please try again later.');
                 });
+            }
+
+            // Function to initialize location status
+            function initLocationStatus() {
+                const locationStatus = document.getElementById('location-status');
+                const statusIndicator = locationStatus.querySelector('.status-indicator');
+                const statusText = locationStatus.querySelector('.status-text');
+                const updateLocationBtn = document.getElementById('update-location-btn');
+
+                // Check if location sharing is enabled
+                fetch(`/api/user/${user.id}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const userData = data.user;
+
+                            if (userData.professionalInfo && userData.professionalInfo.locationSharingEnabled) {
+                                statusIndicator.classList.remove('disabled');
+                                statusText.textContent = 'Location sharing is enabled';
+                            } else {
+                                statusIndicator.classList.add('disabled');
+                                statusText.textContent = 'Location sharing is disabled';
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching user data:', error);
+                    });
+
+                // Handle update location button click
+                updateLocationBtn.addEventListener('click', function() {
+                    if (navigator.geolocation) {
+                        updateLocationBtn.disabled = true;
+                        updateLocationBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+                        navigator.geolocation.getCurrentPosition(
+                            // Success callback
+                            function(position) {
+                                updateUserLocation(user.id, position.coords.latitude, position.coords.longitude, true)
+                                    .then(() => {
+                                        // Update status indicator
+                                        statusIndicator.classList.remove('disabled');
+                                        statusText.textContent = 'Location sharing is enabled';
+
+                                        // Reload potential matches
+                                        loadPotentialMatches();
+
+                                        // Reset button
+                                        updateLocationBtn.disabled = false;
+                                        updateLocationBtn.innerHTML = '<i class="fas fa-location-arrow"></i> Update';
+
+                                        // Show notification
+                                        alert('Your location has been updated successfully. Matches will now be sorted by distance.');
+                                    })
+                                    .catch(error => {
+                                        console.error('Error updating location:', error);
+                                        updateLocationBtn.disabled = false;
+                                        updateLocationBtn.innerHTML = '<i class="fas fa-location-arrow"></i> Update';
+                                        alert('Error updating location. Please try again.');
+                                    });
+                            },
+                            // Error callback
+                            function(error) {
+                                console.warn('Error getting location:', error.message);
+                                updateLocationBtn.disabled = false;
+                                updateLocationBtn.innerHTML = '<i class="fas fa-location-arrow"></i> Update';
+
+                                let errorMessage = 'Error getting your location. ';
+                                switch(error.code) {
+                                    case error.PERMISSION_DENIED:
+                                        errorMessage += 'Please enable location access in your browser settings.';
+                                        break;
+                                    case error.POSITION_UNAVAILABLE:
+                                        errorMessage += 'Location information is unavailable.';
+                                        break;
+                                    case error.TIMEOUT:
+                                        errorMessage += 'The request to get your location timed out.';
+                                        break;
+                                    default:
+                                        errorMessage += 'An unknown error occurred.';
+                                }
+
+                                alert(errorMessage);
+                            },
+                            // Options
+                            {
+                                enableHighAccuracy: true,
+                                timeout: 10000,
+                                maximumAge: 0
+                            }
+                        );
+                    } else {
+                        alert('Geolocation is not supported by your browser');
+                    }
+                });
+
+                // Try to get location automatically on page load
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        function(position) {
+                            updateUserLocation(user.id, position.coords.latitude, position.coords.longitude, true)
+                                .then(() => {
+                                    // Update status indicator
+                                    statusIndicator.classList.remove('disabled');
+                                    statusText.textContent = 'Location sharing is enabled';
+                                })
+                                .catch(error => {
+                                    console.error('Error updating location:', error);
+                                });
+                        },
+                        function(error) {
+                            console.warn('Error getting location on page load:', error.message);
+                        },
+                        {
+                            enableHighAccuracy: true,
+                            timeout: 10000,
+                            maximumAge: 0
+                        }
+                    );
+                }
+            }
+
+            // Function to update user location
+            function updateUserLocation(userId, latitude, longitude, locationSharingEnabled) {
+                return fetch(`/api/update-location/${userId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        latitude,
+                        longitude,
+                        locationSharingEnabled
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success) {
+                        throw new Error(data.message || 'Error updating location');
+                    }
+                    return data;
+                });
+            }
+
+            // Function to load profile pictures for all users
+            function loadProfilePictures(users) {
+                // In a real app, you would fetch each user's profile picture from the server
+                // For this demo, we'll just check if we already have them in localStorage
+
+                // We won't copy the current user's profile picture to other users anymore
+                // Each user will have their own profile picture or none at all
+
+                // This function is now a placeholder for where you would fetch profile pictures
+                // from the server in a real application
             }
         });
 

@@ -110,13 +110,13 @@
         }
 
         .slide-container {
-            width: 200%;
+            width: 300%;
             display: flex;
             transition: transform 0.4s ease;
         }
 
         .slide {
-            width: 50%;
+            width: 33.333%;
             padding-right: 15px;
         }
 
@@ -198,6 +198,7 @@
                 <div class="slide-indicator">
                     <div class="indicator active" id="indicator-1"></div>
                     <div class="indicator" id="indicator-2"></div>
+                    <div class="indicator" id="indicator-3"></div>
                 </div>
                 <form id="signup-form">
                     <div class="slide-container" id="slide-container">
@@ -247,16 +248,6 @@
                         <!-- Slide 2: Professional Information -->
                         <div class="slide" id="slide-2">
                             <div class="form-group">
-                                <label for="workExperience">Years of Work Experience</label>
-                                <input type="number" id="workExperience" name="workExperience" min="0" max="50" required>
-                                <div class="form-error" id="workExperience-error">Please enter your years of experience</div>
-                            </div>
-                            <div class="form-group">
-                                <label for="companyName">Company Name</label>
-                                <input type="text" id="companyName" name="companyName" required>
-                                <div class="form-error" id="companyName-error">Please enter your company name</div>
-                            </div>
-                            <div class="form-group">
                                 <label for="fieldOfWork">Field of Work</label>
                                 <select id="fieldOfWork" name="fieldOfWork" required>
                                     <option value="">Select your field</option>
@@ -274,6 +265,43 @@
                                 <div class="form-error" id="fieldOfWork-error">Please select your field of work</div>
                             </div>
 
+                            <div class="form-group">
+                                <label for="skills">Skills (Recommended: at least 3)</label>
+                                <div class="skill-hint">Enter skills relevant to your field of work</div>
+                                <div class="skill-container">
+                                    <input type="text" id="skill1" name="skill1" placeholder="Skill 1" required>
+                                    <div class="form-error" id="skill1-error">Please enter at least one skill</div>
+                                </div>
+                                <div class="skill-container">
+                                    <input type="text" id="skill2" name="skill2" placeholder="Skill 2" required>
+                                    <div class="form-error" id="skill2-error">Please enter at least two skills</div>
+                                </div>
+                                <div class="skill-container">
+                                    <input type="text" id="skill3" name="skill3" placeholder="Skill 3" required>
+                                    <div class="form-error" id="skill3-error">We recommend at least three skills</div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="companyName">Company Name</label>
+                                <input type="text" id="companyName" name="companyName" required>
+                                <div class="form-error" id="companyName-error">Please enter your company name</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="workExperience">Years of Work Experience</label>
+                                <input type="number" id="workExperience" name="workExperience" min="0" max="50" required>
+                                <div class="form-error" id="workExperience-error">Please enter your years of experience</div>
+                            </div>
+
+                            <div class="slide-buttons">
+                                <button type="button" id="prev-button-1" class="btn btn-secondary">Previous</button>
+                                <button type="button" id="next-button-2" class="btn btn-primary">Next</button>
+                            </div>
+                        </div>
+
+                        <!-- Slide 3: Geographical Information -->
+                        <div class="slide" id="slide-3">
                             <div class="form-group">
                                 <label for="country">Country</label>
                                 <select id="country" name="country" required>
@@ -300,24 +328,27 @@
                             </div>
 
                             <div class="form-group">
-                                <label for="skills">Skills (Recommended: at least 3)</label>
-                                <div class="skill-hint">Enter skills relevant to your field of work</div>
-                                <div class="skill-container">
-                                    <input type="text" id="skill1" name="skill1" placeholder="Skill 1" required>
-                                    <div class="form-error" id="skill1-error">Please enter at least one skill</div>
-                                </div>
-                                <div class="skill-container">
-                                    <input type="text" id="skill2" name="skill2" placeholder="Skill 2" required>
-                                    <div class="form-error" id="skill2-error">Please enter at least two skills</div>
-                                </div>
-                                <div class="skill-container">
-                                    <input type="text" id="skill3" name="skill3" placeholder="Skill 3" required>
-                                    <div class="form-error" id="skill3-error">We recommend at least three skills</div>
-                                </div>
+                                <label for="postalCode">Postal/ZIP Code</label>
+                                <input type="text" id="postalCode" name="postalCode" placeholder="e.g., 10001, SW1A 1AA, etc.">
+                                <div class="field-note">Optional: Helps us connect you with professionals in your area</div>
                             </div>
 
+                            <div class="form-group checkbox">
+                                <input type="checkbox" id="remoteWork" name="remoteWork">
+                                <label for="remoteWork">I'm open to remote work opportunities</label>
+                            </div>
+
+                            <div class="form-group checkbox">
+                                <input type="checkbox" id="locationSharing" name="locationSharing" checked>
+                                <label for="locationSharing">Enable location sharing (helps connect with nearby professionals)</label>
+                                <div class="field-note">Your exact location is never shared. Distances are approximated with a minimum of 1km.</div>
+                            </div>
+
+                            <input type="hidden" id="latitude" name="latitude" value="">
+                            <input type="hidden" id="longitude" name="longitude" value="">
+
                             <div class="slide-buttons">
-                                <button type="button" id="prev-button" class="btn btn-secondary">Previous</button>
+                                <button type="button" id="prev-button-2" class="btn btn-secondary">Previous</button>
                                 <button type="submit" class="btn btn-primary btn-signup">Sign Up</button>
                             </div>
                         </div>
@@ -404,17 +435,20 @@
             };
             const slideContainer = document.getElementById('slide-container');
             const nextButton = document.getElementById('next-button');
-            const prevButton = document.getElementById('prev-button');
+            const nextButton2 = document.getElementById('next-button-2');
+            const prevButton1 = document.getElementById('prev-button-1');
+            const prevButton2 = document.getElementById('prev-button-2');
             const indicator1 = document.getElementById('indicator-1');
             const indicator2 = document.getElementById('indicator-2');
+            const indicator3 = document.getElementById('indicator-3');
 
             let currentSlide = 1;
 
-            // Next button click handler
+            // First Next button click handler
             nextButton.addEventListener('click', function() {
                 if (validateSlide1()) {
                     // Move to slide 2
-                    slideContainer.style.transform = 'translateX(-50%)';
+                    slideContainer.style.transform = 'translateX(-33.333%)';
                     currentSlide = 2;
 
                     // Update indicators
@@ -423,8 +457,21 @@
                 }
             });
 
-            // Previous button click handler
-            prevButton.addEventListener('click', function() {
+            // Second Next button click handler
+            nextButton2.addEventListener('click', function() {
+                if (validateSlide2()) {
+                    // Move to slide 3
+                    slideContainer.style.transform = 'translateX(-66.666%)';
+                    currentSlide = 3;
+
+                    // Update indicators
+                    indicator2.classList.remove('active');
+                    indicator3.classList.add('active');
+                }
+            });
+
+            // First Previous button click handler
+            prevButton1.addEventListener('click', function() {
                 // Move back to slide 1
                 slideContainer.style.transform = 'translateX(0)';
                 currentSlide = 1;
@@ -432,6 +479,17 @@
                 // Update indicators
                 indicator2.classList.remove('active');
                 indicator1.classList.add('active');
+            });
+
+            // Second Previous button click handler
+            prevButton2.addEventListener('click', function() {
+                // Move back to slide 2
+                slideContainer.style.transform = 'translateX(-33.333%)';
+                currentSlide = 2;
+
+                // Update indicators
+                indicator3.classList.remove('active');
+                indicator2.classList.add('active');
             });
 
             // Validate slide 1 fields
@@ -509,24 +567,6 @@
             function validateSlide2() {
                 let isValid = true;
 
-                // Validate work experience
-                const workExperience = document.getElementById('workExperience');
-                if (!workExperience.value || workExperience.value < 0) {
-                    document.getElementById('workExperience-error').style.display = 'block';
-                    isValid = false;
-                } else {
-                    document.getElementById('workExperience-error').style.display = 'none';
-                }
-
-                // Validate company name
-                const companyName = document.getElementById('companyName');
-                if (!companyName.value.trim()) {
-                    document.getElementById('companyName-error').style.display = 'block';
-                    isValid = false;
-                } else {
-                    document.getElementById('companyName-error').style.display = 'none';
-                }
-
                 // Validate field of work
                 const fieldOfWork = document.getElementById('fieldOfWork');
                 if (!fieldOfWork.value) {
@@ -534,24 +574,6 @@
                     isValid = false;
                 } else {
                     document.getElementById('fieldOfWork-error').style.display = 'none';
-                }
-
-                // Validate country
-                const country = document.getElementById('country');
-                if (!country.value) {
-                    document.getElementById('country-error').style.display = 'block';
-                    isValid = false;
-                } else {
-                    document.getElementById('country-error').style.display = 'none';
-                }
-
-                // Validate location
-                const location = document.getElementById('location');
-                if (!location.value.trim()) {
-                    document.getElementById('location-error').style.display = 'block';
-                    isValid = false;
-                } else {
-                    document.getElementById('location-error').style.display = 'none';
                 }
 
                 // Validate skills
@@ -575,10 +597,83 @@
                 if (!skill3.value.trim()) {
                     document.getElementById('skill3-error').style.display = 'block';
                     // Not setting isValid to false since the third skill is recommended but not required
+                } else {
+                    document.getElementById('skill3-error').style.display = 'none';
+                }
+
+                // Validate company name
+                const companyName = document.getElementById('companyName');
+                if (!companyName.value.trim()) {
+                    document.getElementById('companyName-error').style.display = 'block';
+                    isValid = false;
+                } else {
+                    document.getElementById('companyName-error').style.display = 'none';
+                }
+
+                // Validate work experience
+                const workExperience = document.getElementById('workExperience');
+                if (!workExperience.value || workExperience.value < 0) {
+                    document.getElementById('workExperience-error').style.display = 'block';
+                    isValid = false;
+                } else {
+                    document.getElementById('workExperience-error').style.display = 'none';
                 }
 
                 return isValid;
             }
+
+            // Validate slide 3 fields
+            function validateSlide3() {
+                let isValid = true;
+
+                // Validate country
+                const country = document.getElementById('country');
+                if (!country.value) {
+                    document.getElementById('country-error').style.display = 'block';
+                    isValid = false;
+                } else {
+                    document.getElementById('country-error').style.display = 'none';
+                }
+
+                // Validate location
+                const location = document.getElementById('location');
+                if (!location.value.trim()) {
+                    document.getElementById('location-error').style.display = 'block';
+                    isValid = false;
+                } else {
+                    document.getElementById('location-error').style.display = 'none';
+                }
+
+                return isValid;
+            }
+
+            // Get user's geolocation when page loads
+            function getUserLocation() {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        // Success callback
+                        function(position) {
+                            document.getElementById('latitude').value = position.coords.latitude;
+                            document.getElementById('longitude').value = position.coords.longitude;
+                            console.log('Location obtained:', position.coords.latitude, position.coords.longitude);
+                        },
+                        // Error callback
+                        function(error) {
+                            console.warn('Error getting location:', error.message);
+                            // We don't show an error to the user, as location is optional
+                        },
+                        // Options
+                        {
+                            enableHighAccuracy: true,
+                            timeout: 5000,
+                            maximumAge: 0
+                        }
+                    );
+                }
+            }
+
+            // Try to get location when page loads
+            getUserLocation();
 
             // Form submission handler
             document.getElementById('signup-form').addEventListener('submit', function(e) {
@@ -588,7 +683,7 @@
                 if (currentSlide === 1) {
                     if (validateSlide1()) {
                         // Move to slide 2
-                        slideContainer.style.transform = 'translateX(-50%)';
+                        slideContainer.style.transform = 'translateX(-33.333%)';
                         currentSlide = 2;
 
                         // Update indicators
@@ -598,8 +693,25 @@
                     return;
                 }
 
-                // If on slide 2, validate and submit
-                if (validateSlide2()) {
+                // If on slide 2, move to slide 3
+                if (currentSlide === 2) {
+                    if (validateSlide2()) {
+                        // Move to slide 3
+                        slideContainer.style.transform = 'translateX(-66.666%)';
+                        currentSlide = 3;
+
+                        // Update indicators
+                        indicator2.classList.remove('active');
+                        indicator3.classList.add('active');
+
+                        // Try to get location again when reaching slide 3
+                        getUserLocation();
+                    }
+                    return;
+                }
+
+                // If on slide 3, validate and submit
+                if (validateSlide3()) {
                     // Show loading state
                     const submitButton = document.querySelector('.btn-signup');
                     const originalText = submitButton.textContent;
@@ -613,14 +725,19 @@
                         username: document.getElementById('username').value,
                         email: document.getElementById('email').value,
                         password: document.getElementById('password').value,
-                        workExperience: document.getElementById('workExperience').value,
-                        companyName: document.getElementById('companyName').value,
                         fieldOfWork: document.getElementById('fieldOfWork').value,
-                        country: document.getElementById('country').value,
-                        location: document.getElementById('location').value,
                         skill1: document.getElementById('skill1').value,
                         skill2: document.getElementById('skill2').value,
-                        skill3: document.getElementById('skill3').value
+                        skill3: document.getElementById('skill3').value,
+                        companyName: document.getElementById('companyName').value,
+                        workExperience: document.getElementById('workExperience').value,
+                        country: document.getElementById('country').value,
+                        location: document.getElementById('location').value,
+                        postalCode: document.getElementById('postalCode').value,
+                        remoteWork: document.getElementById('remoteWork').checked,
+                        locationSharing: document.getElementById('locationSharing').checked,
+                        latitude: document.getElementById('latitude').value,
+                        longitude: document.getElementById('longitude').value
                     };
 
                     // Send data to server

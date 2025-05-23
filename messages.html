@@ -93,6 +93,14 @@
             color: var(--primary-color);
             margin-right: 10px;
             flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .conversation-avatar .profile-pic {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
         }
 
         .conversation-info {
@@ -1009,12 +1017,13 @@
             </div>
             <nav>
                 <ul class="nav-links">
-                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="dashboard.html">Home</a></li>
                     <li><a href="network.html">Network</a></li>
                     <li><a href="discover.html">Discover</a></li>
                     <li><a href="swipe-history.html">History</a></li>
-                    <li><a href="#">Jobs</a></li>
+                    <li><a href="mentorship.html">Mentorship</a></li>
                     <li><a href="messages.html" class="active">Messaging</a></li>
+                    <li><a href="#">Notifications</a></li>
                 </ul>
                 <div class="nav-icons">
                     <div class="notification-dropdown">
@@ -1652,9 +1661,18 @@
                     const initials = getInitials(user.firstName, user.lastName);
                     const unreadClass = !lastMessage.isRead ? 'unread' : '';
 
+                    // Try to get the user's profile picture from localStorage
+                    const profilePicKey = `profilePicture_${user.id}`;
+                    const profilePic = localStorage.getItem(profilePicKey);
+
                     html += `
                         <div class="conversation-item ${unreadClass}" data-conversation-id="${conversation.id}" data-user-id="${user.id}" data-user-name="${fullName}" data-user-status="${user.status}">
-                            <div class="conversation-avatar">${initials}</div>
+                            <div class="conversation-avatar">
+                                ${profilePic ?
+                                    `<img src="${profilePic}" alt="${fullName}" class="profile-pic">` :
+                                    initials
+                                }
+                            </div>
                             <div class="conversation-info">
                                 <div class="conversation-header">
                                     <h4 class="conversation-name">${fullName}</h4>
@@ -1720,7 +1738,17 @@
 
                 // Update chat header
                 const fullName = `${conversation.user.firstName} ${conversation.user.lastName}`.trim() || conversation.user.username;
-                chatUserAvatar.innerHTML = getInitials(conversation.user.firstName, conversation.user.lastName, conversation.user.username);
+
+                // Try to get the user's profile picture from localStorage
+                const profilePicKey = `profilePicture_${conversation.user.id}`;
+                const profilePic = localStorage.getItem(profilePicKey);
+
+                if (profilePic) {
+                    chatUserAvatar.innerHTML = `<img src="${profilePic}" alt="${fullName}" class="profile-pic">`;
+                } else {
+                    chatUserAvatar.innerHTML = getInitials(conversation.user.firstName, conversation.user.lastName, conversation.user.username);
+                }
+
                 chatUserName.textContent = fullName;
                 chatUserStatus.textContent = conversation.user.status === 'online' ? 'Online' : 'Offline';
 

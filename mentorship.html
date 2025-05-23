@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mentorship - ConnectPro</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Additional styles for the mentorship page */
+        .mentorship-container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .mentorship-header {
+            margin-bottom: 30px;
+        }
+
+        .mentorship-header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            color: var(--text-color);
+        }
+
+        .mentorship-header p {
+            font-size: 1.1rem;
+            color: var(--text-light);
+        }
+
+        .mentorship-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 30px;
+        }
+
+        .tab-item {
+            padding: 15px 25px;
+            font-weight: 500;
+            cursor: pointer;
+            position: relative;
+            color: var(--text-light);
+            transition: color 0.3s ease;
+        }
+
+        .tab-item.active {
+            color: var(--primary-color);
+        }
+
+        .tab-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .mentor-card {
+            background-color: var(--white);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .mentor-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-right: 20px;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .mentor-avatar .profile-pic {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+
+        .mentor-info {
+            flex-grow: 1;
+        }
+
+        .mentor-info h3 {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+            color: var(--text-color);
+        }
+
+        .mentor-info p {
+            color: var(--text-light);
+            margin-bottom: 5px;
+        }
+
+        .mentor-actions {
+            display: flex;
+            gap: 10px;
+            margin-left: 15px;
+        }
+
+        .mentor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .mentor-grid .mentor-card {
+            flex-direction: column;
+            text-align: center;
+            position: relative;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .mentor-grid .mentor-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .mentor-grid .mentor-avatar {
+            width: 100px;
+            height: 100px;
+            font-size: 2.5rem;
+            margin: 0 auto 15px;
+        }
+
+        .mentor-grid .mentor-actions {
+            margin-left: 0;
+            margin-top: 15px;
+            justify-content: center;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: var(--text-color);
+        }
+
+        .empty-state p {
+            color: var(--text-light);
+            margin-bottom: 20px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Become a Mentor styles */
+        .become-mentor-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        .mentor-settings-card, .mentor-tips-card {
+            background-color: var(--white);
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: var(--shadow);
+        }
+
+        .mentor-settings-card h3, .mentor-tips-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: var(--text-color);
+        }
+
+        .mentor-settings-card p {
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+
+        .mentor-status-toggle {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .mentor-status-toggle span {
+            margin-left: 10px;
+            font-weight: 500;
+        }
+
+        /* Toggle Switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--primary-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .slider.round {
+            border-radius: 34px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+        .mentor-details-form {
+            margin-top: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-family: inherit;
+            resize: vertical;
+        }
+
+        .form-hint {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-top: 5px;
+        }
+
+        .mentor-tips-card ul {
+            padding-left: 20px;
+        }
+
+        .mentor-tips-card li {
+            margin-bottom: 12px;
+            color: var(--text-light);
+        }
+
+        .mentor-tips-card li strong {
+            color: var(--text-color);
+        }
+
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .become-mentor-container {
+                grid-template-columns: 1fr;
+            }
+
+            .mentor-actions {
+                flex-direction: column;
+            }
+
+            .mentor-card {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .mentor-avatar {
+                margin: 0 auto 15px;
+            }
+
+            .mentor-actions {
+                margin-left: 0;
+                margin-top: 15px;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1><a href="dashboard.html">ConnectPro</a></h1>
+            </div>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="network.html">Network</a></li>
+                    <li><a href="discover.html">Discover</a></li>
+                    <li><a href="swipe-history.html">History</a></li>
+                    <li><a href="mentorship.html" class="active">Mentorship</a></li>
+                    <li><a href="messages.html" class="messages-link">Messaging <span id="messages-badge" class="badge" style="display: none;">0</span></a></li>
+                    <li><a href="#">Notifications</a></li>
+                </ul>
+                <div class="user-dropdown">
+                    <div class="user-avatar" id="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-dropdown-content">
+                        <a href="#"><i class="fas fa-user-circle"></i> View Profile</a>
+                        <a href="#"><i class="fas fa-cog"></i> Settings</a>
+                        <div class="divider"></div>
+                        <a href="#" id="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </div>
+                </div>
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Mentorship Content -->
+    <section class="mentorship-section">
+        <div class="mentorship-container">
+            <div class="mentorship-header">
+                <h1>Mentorship & Collaboration</h1>
+                <p>Connect with mentors and collaborators in your field</p>
+            </div>
+
+            <div class="mentorship-tabs">
+                <div class="tab-item active" data-tab="find-mentors">
+                    Find Mentors
+                </div>
+                <div class="tab-item" data-tab="my-mentors">
+                    My Mentors
+                </div>
+                <div class="tab-item" data-tab="mentorship-requests">
+                    Mentorship Requests
+                </div>
+                <div class="tab-item" data-tab="become-mentor">
+                    Become a Mentor
+                </div>
+            </div>
+
+            <div class="tab-content active" id="find-mentors">
+                <div id="mentors-container">
+                    <!-- Mentors will be loaded here -->
+                    <div class="loading">Loading available mentors...</div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="my-mentors">
+                <div id="my-mentors-container">
+                    <!-- My mentors will be loaded here -->
+                    <div class="loading">Loading your mentors...</div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="mentorship-requests">
+                <div id="mentorship-requests-container">
+                    <!-- Mentorship requests will be loaded here -->
+                    <div class="loading">Loading mentorship requests...</div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="become-mentor">
+                <div class="become-mentor-container">
+                    <div class="mentor-settings-card">
+                        <h3>Mentor Settings</h3>
+                        <p>Share your expertise and help others grow in their careers. As a mentor, you'll be able to connect with professionals seeking guidance in your field.</p>
+
+                        <div class="mentor-status-toggle">
+                            <label class="switch">
+                                <input type="checkbox" id="mentor-status-toggle">
+                                <span class="slider round"></span>
+                            </label>
+                            <span id="mentor-status-text">I'm available as a mentor</span>
+                        </div>
+
+                        <div class="mentor-details-form" id="mentor-details-form" style="display: none;">
+                            <div class="form-group">
+                                <label for="mentorship-details">Mentorship Details</label>
+                                <textarea id="mentorship-details" rows="4" placeholder="Describe your expertise, areas you can mentor in, and what mentees can expect from you..."></textarea>
+                                <p class="form-hint">This information will be visible to potential mentees.</p>
+                            </div>
+
+                            <button id="save-mentor-settings" class="btn btn-primary">Save Settings</button>
+                        </div>
+                    </div>
+
+                    <div class="mentor-tips-card">
+                        <h3>Tips for Effective Mentoring</h3>
+                        <ul>
+                            <li><strong>Be responsive</strong> - Try to respond to messages within 24-48 hours</li>
+                            <li><strong>Set expectations</strong> - Clearly communicate your availability and boundaries</li>
+                            <li><strong>Ask questions</strong> - Help mentees discover solutions through guided questions</li>
+                            <li><strong>Share experiences</strong> - Real-world examples are invaluable learning tools</li>
+                            <li><strong>Provide feedback</strong> - Constructive feedback helps mentees grow</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-column">
+                    <h3>ConnectPro</h3>
+                    <p>The professional networking platform designed to help you connect, collaborate, and grow.</p>
+                    <div class="social-icons">
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Careers</a></li>
+                        <li><a href="#">Press</a></li>
+                        <li><a href="#">Blog</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Community Guidelines</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Contact</h4>
+                    <ul>
+                        <li><a href="mailto:info@connectpro.com">info@connectpro.com</a></li>
+                        <li><a href="tel:+1234567890">+1 (234) 567-890</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2023 ConnectPro. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in
+            const userData = localStorage.getItem('user');
+
+            if (!userData) {
+                // User is not logged in, redirect to signin page
+                window.location.href = 'signin.html';
+                return;
+            }
+
+            // Parse user data
+            const user = JSON.parse(userData);
+
+            // Set user avatar
+            const userAvatar = document.getElementById('user-avatar');
+
+            // Try to get the user's profile picture from localStorage
+            const profilePicKey = `profilePicture_${user.id}`;
+            const profilePic = localStorage.getItem(profilePicKey);
+
+            if (profilePic) {
+                userAvatar.innerHTML = `<img src="${profilePic}" alt="${user.firstName}" class="profile-pic">`;
+            } else {
+                userAvatar.innerHTML = getInitials(user.firstName, user.lastName, user.username);
+            }
+
+            // Handle logout
+            document.getElementById('logout-link').addEventListener('click', function(e) {
+                e.preventDefault();
+                localStorage.removeItem('user');
+                showNotification(true, 'You have been logged out successfully.');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 2000);
+            });
+
+            // Tab functionality
+            const tabItems = document.querySelectorAll('.tab-item');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+
+                    // Remove active class from all tabs and contents
+                    tabItems.forEach(tab => tab.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+
+                    // Add active class to clicked tab and corresponding content
+                    this.classList.add('active');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+
+            // Load available mentors
+            loadMentors();
+
+            // Load my mentors
+            loadMyMentors();
+
+            // Load mentorship requests
+            loadMentorshipRequests();
+
+            // Initialize mentor settings
+            initMentorSettings();
+
+            // Function to load available mentors
+            function loadMentors() {
+                const mentorsContainer = document.getElementById('mentors-container');
+                mentorsContainer.innerHTML = '<div class="loading">Loading available mentors...</div>';
+
+                fetch(`/api/mentors/${user.id}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            renderMentors(data.mentors);
+                        } else {
+                            mentorsContainer.innerHTML = `<div class="empty-state">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <h3>Error Loading Mentors</h3>
+                                <p>${data.message || 'There was an error loading available mentors.'}</p>
+                            </div>`;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching mentors:', error);
+                        mentorsContainer.innerHTML = `<div class="empty-state">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <h3>Error Loading Mentors</h3>
+                            <p>There was an error connecting to the server. Please try again later.</p>
+                        </div>`;
+                    });
+            }
+
+            // Function to render available mentors
+            function renderMentors(mentors) {
+                const mentorsContainer = document.getElementById('mentors-container');
+
+                if (!mentors || mentors.length === 0) {
+                    mentorsContainer.innerHTML = `<div class="empty-state">
+                        <i class="fas fa-user-tie"></i>
+                        <h3>No Mentors Available</h3>
+                        <p>There are no mentors available in your field at the moment. Check back later or try expanding your search criteria.</p>
+                    </div>`;
+                    return;
+                }
+
+                let html = '<div class="mentor-grid">';
+
+                mentors.forEach(mentor => {
+                    const fullName = `${mentor.firstName || ''} ${mentor.lastName || ''}`.trim() || mentor.username;
+                    const initials = getInitials(mentor.firstName, mentor.lastName, mentor.username);
+                    const position = mentor.professionalInfo?.fieldOfWork ? `${mentor.professionalInfo.fieldOfWork}` : '';
+                    const company = mentor.professionalInfo?.companyName ? ` at ${mentor.professionalInfo.companyName}` : '';
+                    const location = mentor.professionalInfo?.location ? `${mentor.professionalInfo.location}, ${mentor.professionalInfo.country}` : '';
+
+                    // Try to get the user's profile picture from localStorage
+                    const profilePicKey = `profilePicture_${mentor._id}`;
+                    const profilePic = localStorage.getItem(profilePicKey);
+
+                    html += `
+                    <div class="mentor-card" data-mentor-id="${mentor._id}">
+                        <div class="mentor-avatar">
+                            ${profilePic ?
+                                `<img src="${profilePic}" alt="${fullName}" class="profile-pic">` :
+                                initials
+                            }
+                        </div>
+                        <h3>${fullName}</h3>
+                        <p>${position}${company}</p>
+                        ${location ? `<p><i class="fas fa-map-marker-alt"></i> ${location}</p>` : ''}
+                        <div class="mentor-actions">
+                            <button class="btn btn-primary request-mentorship" data-mentor-id="${mentor._id}">Request Mentorship</button>
+                            <button class="btn btn-outline view-profile" data-user-id="${mentor._id}">View Profile</button>
+                        </div>
+                    </div>
+                    `;
+                });
+
+                html += '</div>';
+                mentorsContainer.innerHTML = html;
+
+                // Add event listeners to buttons
+                document.querySelectorAll('.request-mentorship').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const mentorId = this.getAttribute('data-mentor-id');
+                        requestMentorship(mentorId);
+                    });
+                });
+
+                document.querySelectorAll('.view-profile').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const userId = this.getAttribute('data-user-id');
+                        viewProfile(userId);
+                    });
+                });
+            }
+
+            // Function to load my mentors
+            function loadMyMentors() {
+                const myMentorsContainer = document.getElementById('my-mentors-container');
+                myMentorsContainer.innerHTML = '<div class="loading">Loading your mentors...</div>';
+
+                fetch(`/api/my-mentors/${user.id}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            renderMyMentors(data.mentors);
+                        } else {
+                            myMentorsContainer.innerHTML = `<div class="empty-state">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <h3>Error Loading Your Mentors</h3>
+                                <p>${data.message || 'There was an error loading your mentors.'}</p>
+                            </div>`;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching my mentors:', error);
+                        myMentorsContainer.innerHTML = `<div class="empty-state">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <h3>Error Loading Your Mentors</h3>
+                            <p>There was an error connecting to the server. Please try again later.</p>
+                        </div>`;
+                    });
+            }
+
+            // Function to render my mentors
+            function renderMyMentors(mentors) {
+                const myMentorsContainer = document.getElementById('my-mentors-container');
+
+                if (!mentors || mentors.length === 0) {
+                    myMentorsContainer.innerHTML = `<div class="empty-state">
+                        <i class="fas fa-user-tie"></i>
+                        <h3>No Mentors Yet</h3>
+                        <p>You don't have any mentors yet. Find mentors in your field and request mentorship to get started.</p>
+                    </div>`;
+                    return;
+                }
+
+                let html = '<div class="mentor-grid">';
+
+                mentors.forEach(mentor => {
+                    const fullName = `${mentor.firstName || ''} ${mentor.lastName || ''}`.trim() || mentor.username;
+                    const initials = getInitials(mentor.firstName, mentor.lastName, mentor.username);
+                    const position = mentor.professionalInfo?.fieldOfWork ? `${mentor.professionalInfo.fieldOfWork}` : '';
+                    const company = mentor.professionalInfo?.companyName ? ` at ${mentor.professionalInfo.companyName}` : '';
+                    const location = mentor.professionalInfo?.location ? `${mentor.professionalInfo.location}, ${mentor.professionalInfo.country}` : '';
+
+                    // Try to get the user's profile picture from localStorage
+                    const profilePicKey = `profilePicture_${mentor._id}`;
+                    const profilePic = localStorage.getItem(profilePicKey);
+
+                    html += `
+                    <div class="mentor-card" data-mentor-id="${mentor._id}">
+                        <div class="mentor-avatar">
+                            ${profilePic ?
+                                `<img src="${profilePic}" alt="${fullName}" class="profile-pic">` :
+                                initials
+                            }
+                        </div>
+                        <h3>${fullName}</h3>
+                        <p>${position}${company}</p>
+                        ${location ? `<p><i class="fas fa-map-marker-alt"></i> ${location}</p>` : ''}
+                        <div class="mentor-actions">
+                            <a href="messages.html?conversation=${mentor._id}" class="btn btn-primary">Message</a>
+                            <button class="btn btn-outline view-profile" data-user-id="${mentor._id}">View Profile</button>
+                        </div>
+                    </div>
+                    `;
+                });
+
+                html += '</div>';
+                myMentorsContainer.innerHTML = html;
+
+                // Add event listeners to buttons
+                document.querySelectorAll('.view-profile').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const userId = this.getAttribute('data-user-id');
+                        viewProfile(userId);
+                    });
+                });
+            }
+
+            // Function to load mentorship requests
+            function loadMentorshipRequests() {
+                const requestsContainer = document.getElementById('mentorship-requests-container');
+                requestsContainer.innerHTML = '<div class="loading">Loading mentorship requests...</div>';
+
+                fetch(`/api/mentorship-requests/${user.id}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            renderMentorshipRequests(data.requests);
+                        } else {
+                            requestsContainer.innerHTML = `<div class="empty-state">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <h3>Error Loading Requests</h3>
+                                <p>${data.message || 'There was an error loading mentorship requests.'}</p>
+                            </div>`;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching mentorship requests:', error);
+                        requestsContainer.innerHTML = `<div class="empty-state">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <h3>Error Loading Requests</h3>
+                            <p>There was an error connecting to the server. Please try again later.</p>
+                        </div>`;
+                    });
+            }
+
+            // Function to render mentorship requests
+            function renderMentorshipRequests(requests) {
+                const requestsContainer = document.getElementById('mentorship-requests-container');
+
+                if (!requests || requests.length === 0) {
+                    requestsContainer.innerHTML = `<div class="empty-state">
+                        <i class="fas fa-user-tie"></i>
+                        <h3>No Mentorship Requests</h3>
+                        <p>You don't have any pending mentorship requests at the moment.</p>
+                    </div>`;
+                    return;
+                }
+
+                let html = '';
+
+                requests.forEach(request => {
+                    const fromUser = request.fromUser;
+                    if (!fromUser) return;
+
+                    const fullName = `${fromUser.firstName || ''} ${fromUser.lastName || ''}`.trim() || fromUser.username;
+                    const initials = getInitials(fromUser.firstName, fromUser.lastName, fromUser.username);
+                    const position = fromUser.professionalInfo?.fieldOfWork ? `${fromUser.professionalInfo.fieldOfWork}` : '';
+                    const company = fromUser.professionalInfo?.companyName ? ` at ${fromUser.professionalInfo.companyName}` : '';
+                    const requestDate = new Date(request.createdAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    });
+
+                    // Try to get the user's profile picture from localStorage
+                    const profilePicKey = `profilePicture_${fromUser._id}`;
+                    const profilePic = localStorage.getItem(profilePicKey);
+
+                    html += `
+                    <div class="mentor-card" data-request-id="${request._id}">
+                        <div class="mentor-avatar">
+                            ${profilePic ?
+                                `<img src="${profilePic}" alt="${fullName}" class="profile-pic">` :
+                                initials
+                            }
+                        </div>
+                        <div class="mentor-info">
+                            <h3>${fullName}</h3>
+                            <p>${position}${company}</p>
+                            <span class="connection-time">Request received on ${requestDate}</span>
+                        </div>
+                        <div class="mentor-actions">
+                            <button class="btn btn-primary accept-request" data-request-id="${request._id}">Accept</button>
+                            <button class="btn btn-outline reject-request" data-request-id="${request._id}">Decline</button>
+                        </div>
+                    </div>
+                    `;
+                });
+
+                requestsContainer.innerHTML = html;
+
+                // Add event listeners to accept/reject buttons
+                document.querySelectorAll('.accept-request').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const requestId = this.getAttribute('data-request-id');
+                        updateMentorshipRequest(requestId, 'accepted');
+                    });
+                });
+
+                document.querySelectorAll('.reject-request').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const requestId = this.getAttribute('data-request-id');
+                        updateMentorshipRequest(requestId, 'rejected');
+                    });
+                });
+            }
+
+            // Function to request mentorship
+            function requestMentorship(mentorId) {
+                fetch('/api/request-mentorship', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        fromUserId: user.id,
+                        toUserId: mentorId
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification(true, 'Mentorship request sent successfully');
+
+                        // Disable the request button
+                        const requestButton = document.querySelector(`.request-mentorship[data-mentor-id="${mentorId}"]`);
+                        if (requestButton) {
+                            requestButton.disabled = true;
+                            requestButton.textContent = 'Request Sent';
+                        }
+                    } else {
+                        showNotification(false, data.message || 'Failed to send mentorship request');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error requesting mentorship:', error);
+                    showNotification(false, 'Error connecting to server. Please try again later.');
+                });
+            }
+
+            // Function to update mentorship request status
+            function updateMentorshipRequest(requestId, status) {
+                const card = document.querySelector(`.mentor-card[data-request-id="${requestId}"]`);
+                const acceptBtn = card.querySelector('.accept-request');
+                const rejectBtn = card.querySelector('.reject-request');
+
+                // Disable buttons while processing
+                if (acceptBtn) acceptBtn.disabled = true;
+                if (rejectBtn) rejectBtn.disabled = true;
+
+                fetch(`/api/mentorship-request/${requestId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Show success message
+                        showNotification(true, `Mentorship request ${status === 'accepted' ? 'accepted' : 'declined'} successfully`);
+
+                        // Remove the card with animation
+                        card.style.opacity = '0';
+                        card.style.transform = 'translateY(-20px)';
+                        card.style.transition = 'opacity 0.3s, transform 0.3s';
+
+                        setTimeout(() => {
+                            card.remove();
+
+                            // Check if there are no more requests
+                            const remainingCards = document.querySelectorAll('.mentor-card[data-request-id]');
+                            if (remainingCards.length === 0) {
+                                loadMentorshipRequests(); // Reload to show empty state
+                            }
+
+                            // If accepted, reload my mentors
+                            if (status === 'accepted') {
+                                loadMyMentors();
+                            }
+                        }, 300);
+                    } else {
+                        // Show error message
+                        showNotification(false, data.message || 'Failed to update mentorship request');
+
+                        // Re-enable buttons
+                        if (acceptBtn) acceptBtn.disabled = false;
+                        if (rejectBtn) rejectBtn.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating mentorship request:', error);
+                    showNotification(false, 'Error connecting to server. Please try again later.');
+
+                    // Re-enable buttons
+                    if (acceptBtn) acceptBtn.disabled = false;
+                    if (rejectBtn) rejectBtn.disabled = false;
+                });
+            }
+
+            // Function to view user profile
+            function viewProfile(userId) {
+                // For now, just show a notification
+                showNotification(true, 'Profile view functionality coming soon');
+            }
+
+            // Function to initialize mentor settings
+            function initMentorSettings() {
+                const mentorStatusToggle = document.getElementById('mentor-status-toggle');
+                const mentorStatusText = document.getElementById('mentor-status-text');
+                const mentorDetailsForm = document.getElementById('mentor-details-form');
+                const mentorshipDetails = document.getElementById('mentorship-details');
+                const saveMentorSettingsBtn = document.getElementById('save-mentor-settings');
+
+                // Check if user is already a mentor
+                fetch(`/api/user/${user.id}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const userData = data.user;
+
+                            // Set toggle state based on user's mentor status
+                            if (userData.isAvailableAsMentor) {
+                                mentorStatusToggle.checked = true;
+                                mentorStatusText.textContent = "I'm available as a mentor";
+                                mentorDetailsForm.style.display = 'block';
+                            } else {
+                                mentorStatusToggle.checked = false;
+                                mentorStatusText.textContent = "I'm not available as a mentor";
+                                mentorDetailsForm.style.display = 'none';
+                            }
+
+                            // Set mentorship details if available
+                            if (userData.professionalInfo && userData.professionalInfo.mentorshipDetails) {
+                                mentorshipDetails.value = userData.professionalInfo.mentorshipDetails;
+                            }
+                        } else {
+                            showNotification(false, data.message || 'Failed to load mentor settings');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading mentor settings:', error);
+                        showNotification(false, 'Error connecting to server. Please try again later.');
+                    });
+
+                // Toggle mentor status
+                mentorStatusToggle.addEventListener('change', function() {
+                    if (this.checked) {
+                        mentorStatusText.textContent = "I'm available as a mentor";
+                        mentorDetailsForm.style.display = 'block';
+                    } else {
+                        mentorStatusText.textContent = "I'm not available as a mentor";
+                        mentorDetailsForm.style.display = 'none';
+
+                        // Update mentor status in the database
+                        updateMentorStatus(false);
+                    }
+                });
+
+                // Save mentor settings
+                saveMentorSettingsBtn.addEventListener('click', function() {
+                    const details = mentorshipDetails.value.trim();
+
+                    if (!details) {
+                        showNotification(false, 'Please provide mentorship details');
+                        return;
+                    }
+
+                    updateMentorStatus(true, details);
+                });
+            }
+
+            // Function to update mentor status
+            function updateMentorStatus(isAvailable, mentorshipDetails = '') {
+                fetch(`/api/toggle-mentor-status/${user.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        isAvailable,
+                        mentorshipDetails
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification(true, data.message || 'Mentor status updated successfully');
+                    } else {
+                        showNotification(false, data.message || 'Failed to update mentor status');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating mentor status:', error);
+                    showNotification(false, 'Error connecting to server. Please try again later.');
+                });
+            }
+
+            // Function to show notification
+            function showNotification(success, message) {
+                const notification = document.getElementById('notification');
+                notification.textContent = message;
+                notification.className = 'notification';
+                notification.classList.add(success ? 'success' : 'error');
+                notification.classList.add('show');
+
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>

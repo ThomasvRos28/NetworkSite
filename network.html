@@ -89,6 +89,14 @@
             color: var(--primary-color);
             margin-right: 20px;
             flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .connection-avatar .profile-pic {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
         }
 
         .connection-info {
@@ -283,11 +291,11 @@
             </div>
             <nav>
                 <ul class="nav-links">
-                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="dashboard.html">Home</a></li>
                     <li><a href="network.html" class="active">Network</a></li>
                     <li><a href="discover.html">Discover</a></li>
                     <li><a href="swipe-history.html">History</a></li>
-                    <li><a href="#">Jobs</a></li>
+                    <li><a href="mentorship.html">Mentorship</a></li>
                     <li><a href="messages.html" class="messages-link">Messaging <span id="messages-badge" class="badge" style="display: none;">0</span></a></li>
                     <li><a href="#">Notifications</a></li>
                 </ul>
@@ -523,9 +531,18 @@
                         day: 'numeric'
                     });
 
+                    // Try to get the user's profile picture from localStorage
+                    const profilePicKey = `profilePicture_${fromUser._id}`;
+                    const profilePic = localStorage.getItem(profilePicKey);
+
                     html += `
                     <div class="connection-card" data-request-id="${request._id}">
-                        <div class="connection-avatar">${initials}</div>
+                        <div class="connection-avatar">
+                            ${profilePic ?
+                                `<img src="${profilePic}" alt="${fullName}" class="profile-pic">` :
+                                initials
+                            }
+                        </div>
                         <div class="connection-info">
                             <h3>${fullName}</h3>
                             <p>Wants to connect with you</p>
@@ -689,9 +706,18 @@
                     const position = connection.fieldOfWork ? connection.fieldOfWork : 'ConnectPro Member';
                     const company = connection.companyName ? ` at ${connection.companyName}` : '';
 
+                    // Try to get the user's profile picture from localStorage
+                    const profilePicKey = `profilePicture_${connection.id}`;
+                    const profilePic = localStorage.getItem(profilePicKey);
+
                     html += `
                     <div class="connection-card" data-connection-id="${connection.id}">
-                        <div class="connection-avatar">${initials}</div>
+                        <div class="connection-avatar">
+                            ${profilePic ?
+                                `<img src="${profilePic}" alt="${fullName}" class="profile-pic">` :
+                                initials
+                            }
+                        </div>
                         <h3>${fullName}</h3>
                         <p>${position}${company}</p>
                         <div class="connection-actions">

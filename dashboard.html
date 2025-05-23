@@ -435,6 +435,125 @@
             background-color: var(--primary-color-dark);
             transform: scale(1.1);
         }
+
+        /* Location controls styles */
+        .location-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .location-status {
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+            background-color: #2ecc71; /* Green for enabled */
+        }
+
+        .status-indicator.disabled {
+            background-color: #e74c3c; /* Red for disabled */
+        }
+
+        /* Nearby professionals styles */
+        .nearby-professionals {
+            margin-top: 15px;
+        }
+
+        .nearby-user-card {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background-color: var(--white);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .nearby-user-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .nearby-user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .nearby-user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .nearby-user-info {
+            flex-grow: 1;
+        }
+
+        .nearby-user-info h3 {
+            margin: 0 0 5px;
+            font-size: 1rem;
+        }
+
+        .nearby-user-info p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .distance-badge {
+            background-color: #f1f1f1;
+            color: var(--text-color);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 10px;
+            white-space: nowrap;
+        }
+
+        /* Empty state styles */
+        .empty-state {
+            text-align: center;
+            padding: 30px 20px;
+            color: var(--text-light);
+        }
+
+        .empty-state i {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: var(--border-color);
+        }
+
+        .empty-state p {
+            margin: 5px 0;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-light);
+        }
     </style>
 </head>
 <body>
@@ -446,11 +565,11 @@
             </div>
             <nav>
                 <ul class="nav-links">
-                    <li><a href="dashboard.html" class="active">Dashboard</a></li>
+                    <li><a href="dashboard.html" class="active">Home</a></li>
                     <li><a href="network.html" class="network-link">Network <span id="network-badge" class="badge" style="display: none;">0</span></a></li>
                     <li><a href="discover.html">Discover</a></li>
                     <li><a href="swipe-history.html">History</a></li>
-                    <li><a href="#">Jobs</a></li>
+                    <li><a href="mentorship.html">Mentorship</a></li>
                     <li><a href="messages.html" class="messages-link">Messaging <span id="messages-badge" class="badge" style="display: none;">0</span></a></li>
                     <li><a href="#">Notifications</a></li>
                 </ul>
@@ -562,6 +681,23 @@
                         </div>
                         <div class="view-all-link" style="margin-top: 15px; text-align: right;">
                             <a href="index.html#mentorship-section" class="btn btn-outline">Find More Connections</a>
+                        </div>
+                    </div>
+
+                    <!-- Nearby Professionals -->
+                    <div class="content-card">
+                        <h2><i class="fas fa-map-marker-alt"></i> Nearby Professionals</h2>
+                        <div class="location-controls">
+                            <button id="refresh-location" class="btn btn-outline">
+                                <i class="fas fa-location-arrow"></i> Update My Location
+                            </button>
+                            <div class="location-status" id="location-status">
+                                <span class="status-indicator"></span>
+                                <span class="status-text">Location sharing is enabled</span>
+                            </div>
+                        </div>
+                        <div class="nearby-professionals" id="nearby-professionals">
+                            <div class="loading">Loading nearby professionals...</div>
                         </div>
                     </div>
                 </div>
@@ -677,9 +813,15 @@
             initProfilePicture();
 
             // Load profile picture or set initials if none exists
-            const profilePic = localStorage.getItem('profilePicture');
+            const userId = user.id;
+            const profilePic = localStorage.getItem(`profilePicture_${userId}`) || localStorage.getItem('profilePicture');
             if (profilePic) {
                 updateProfilePictureUI(profilePic);
+
+                // If we found it in the old format, migrate it to the new format
+                if (!localStorage.getItem(`profilePicture_${userId}`) && localStorage.getItem('profilePicture')) {
+                    localStorage.setItem(`profilePicture_${userId}`, profilePic);
+                }
             } else {
                 // Set avatar initials
                 const userInitials = getInitials(user.firstName, user.lastName, user.username);
@@ -696,6 +838,12 @@
 
             // Load connection requests
             loadConnectionRequests(user.id);
+
+            // Initialize location tracking
+            initLocationTracking(user.id);
+
+            // Load nearby professionals
+            loadNearbyProfessionals(user.id);
 
             // Handle logout
             document.getElementById('logout-link').addEventListener('click', function(e) {
@@ -890,6 +1038,236 @@
                 }
             }
 
+            // Function to initialize location tracking
+            function initLocationTracking(userId) {
+                const refreshLocationBtn = document.getElementById('refresh-location');
+                const locationStatus = document.getElementById('location-status');
+                const statusIndicator = locationStatus.querySelector('.status-indicator');
+                const statusText = locationStatus.querySelector('.status-text');
+
+                // Check if location sharing is enabled
+                fetch(`/api/user/${userId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const userData = data.user;
+
+                            if (userData.professionalInfo && userData.professionalInfo.locationSharingEnabled) {
+                                statusIndicator.classList.remove('disabled');
+                                statusText.textContent = 'Location sharing is enabled';
+                            } else {
+                                statusIndicator.classList.add('disabled');
+                                statusText.textContent = 'Location sharing is disabled';
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching user data:', error);
+                    });
+
+                // Handle refresh location button click
+                refreshLocationBtn.addEventListener('click', function() {
+                    if (navigator.geolocation) {
+                        refreshLocationBtn.disabled = true;
+                        refreshLocationBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+
+                        navigator.geolocation.getCurrentPosition(
+                            // Success callback
+                            function(position) {
+                                updateUserLocation(userId, position.coords.latitude, position.coords.longitude, true)
+                                    .then(() => {
+                                        // Update status indicator
+                                        statusIndicator.classList.remove('disabled');
+                                        statusText.textContent = 'Location sharing is enabled';
+
+                                        // Reload nearby professionals
+                                        loadNearbyProfessionals(userId);
+
+                                        // Reset button
+                                        refreshLocationBtn.disabled = false;
+                                        refreshLocationBtn.innerHTML = '<i class="fas fa-location-arrow"></i> Update My Location';
+
+                                        showNotification(true, 'Your location has been updated successfully');
+                                    })
+                                    .catch(error => {
+                                        console.error('Error updating location:', error);
+                                        refreshLocationBtn.disabled = false;
+                                        refreshLocationBtn.innerHTML = '<i class="fas fa-location-arrow"></i> Update My Location';
+                                        showNotification(false, 'Error updating location. Please try again.');
+                                    });
+                            },
+                            // Error callback
+                            function(error) {
+                                console.warn('Error getting location:', error.message);
+                                refreshLocationBtn.disabled = false;
+                                refreshLocationBtn.innerHTML = '<i class="fas fa-location-arrow"></i> Update My Location';
+
+                                let errorMessage = 'Error getting your location. ';
+                                switch(error.code) {
+                                    case error.PERMISSION_DENIED:
+                                        errorMessage += 'Please enable location access in your browser settings.';
+                                        break;
+                                    case error.POSITION_UNAVAILABLE:
+                                        errorMessage += 'Location information is unavailable.';
+                                        break;
+                                    case error.TIMEOUT:
+                                        errorMessage += 'The request to get your location timed out.';
+                                        break;
+                                    default:
+                                        errorMessage += 'An unknown error occurred.';
+                                }
+
+                                showNotification(false, errorMessage);
+                            },
+                            // Options
+                            {
+                                enableHighAccuracy: true,
+                                timeout: 10000,
+                                maximumAge: 0
+                            }
+                        );
+                    } else {
+                        showNotification(false, 'Geolocation is not supported by your browser');
+                    }
+                });
+
+                // Try to get location automatically on page load
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        function(position) {
+                            updateUserLocation(userId, position.coords.latitude, position.coords.longitude, true)
+                                .then(() => {
+                                    // Update status indicator
+                                    statusIndicator.classList.remove('disabled');
+                                    statusText.textContent = 'Location sharing is enabled';
+
+                                    // Reload nearby professionals
+                                    loadNearbyProfessionals(userId);
+                                })
+                                .catch(error => {
+                                    console.error('Error updating location:', error);
+                                });
+                        },
+                        function(error) {
+                            console.warn('Error getting location on page load:', error.message);
+                        },
+                        {
+                            enableHighAccuracy: true,
+                            timeout: 10000,
+                            maximumAge: 0
+                        }
+                    );
+                }
+            }
+
+            // Function to update user location
+            function updateUserLocation(userId, latitude, longitude, locationSharingEnabled) {
+                return fetch(`/api/update-location/${userId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        latitude,
+                        longitude,
+                        locationSharingEnabled
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success) {
+                        throw new Error(data.message || 'Error updating location');
+                    }
+                    return data;
+                });
+            }
+
+            // Function to load nearby professionals
+            function loadNearbyProfessionals(userId) {
+                const nearbyContainer = document.getElementById('nearby-professionals');
+                nearbyContainer.innerHTML = '<div class="loading">Loading nearby professionals...</div>';
+
+                fetch(`/api/nearby-users/${userId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            renderNearbyProfessionals(data.nearbyUsers);
+                        } else {
+                            if (data.message.includes('Location sharing is disabled')) {
+                                nearbyContainer.innerHTML = `
+                                    <div class="empty-state">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        <p>${data.message}</p>
+                                        <p>Click "Update My Location" to enable location sharing and see professionals near you.</p>
+                                    </div>
+                                `;
+                            } else {
+                                nearbyContainer.innerHTML = `
+                                    <div class="empty-state">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        <p>Error: ${data.message || 'Could not load nearby professionals'}</p>
+                                    </div>
+                                `;
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching nearby professionals:', error);
+                        nearbyContainer.innerHTML = `
+                            <div class="empty-state">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <p>Error connecting to server. Please try again later.</p>
+                            </div>
+                        `;
+                    });
+            }
+
+            // Function to render nearby professionals
+            function renderNearbyProfessionals(nearbyUsers) {
+                const nearbyContainer = document.getElementById('nearby-professionals');
+
+                if (!nearbyUsers || nearbyUsers.length === 0) {
+                    nearbyContainer.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-users"></i>
+                            <p>No professionals found near you.</p>
+                            <p>Try expanding your search or check back later.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = '';
+
+                nearbyUsers.forEach(user => {
+                    const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username;
+                    const initials = getInitials(user.firstName, user.lastName, user.username);
+                    const position = user.fieldOfWork ? `${user.fieldOfWork}` : '';
+                    const company = user.companyName ? ` at ${user.companyName}` : '';
+
+                    // Try to get the user's profile picture from localStorage
+                    const profilePicKey = `profilePicture_${user.userId}`;
+                    const profilePic = localStorage.getItem(profilePicKey);
+
+                    html += `
+                    <div class="nearby-user-card">
+                        <div class="nearby-user-avatar">
+                            ${profilePic ?
+                                `<img src="${profilePic}" alt="${fullName}" class="profile-pic">` :
+                                initials
+                            }
+                        </div>
+                        <div class="nearby-user-info">
+                            <h3>${fullName} <span class="distance-badge">${user.distance} km away</span></h3>
+                            <p>${position}${company}</p>
+                        </div>
+                    </div>
+                    `;
+                });
+
+                nearbyContainer.innerHTML = html;
+            }
+
             // Function to show notification
             function showNotification(success, message) {
                 const notificationContainer = document.getElementById('notification-container');
@@ -996,7 +1374,9 @@
                         showNotification(true, 'Profile picture updated successfully');
                     } else if (profilePicPlaceholder.style.display !== 'none') {
                         // User wants to remove profile picture
-                        localStorage.removeItem('profilePicture');
+                        const userId = user.id;
+                        localStorage.removeItem(`profilePicture_${userId}`);
+                        localStorage.removeItem('profilePicture'); // Also remove the old format
 
                         // Update UI to show initials
                         updateProfilePictureUI(null);
@@ -1019,7 +1399,8 @@
 
                 // Load profile picture from storage
                 function loadProfilePicture() {
-                    const profilePic = localStorage.getItem('profilePicture');
+                    const userId = user.id;
+                    const profilePic = localStorage.getItem(`profilePicture_${userId}`) || localStorage.getItem('profilePicture');
 
                     if (profilePic) {
                         updateProfilePictureUI(profilePic);
@@ -1029,12 +1410,22 @@
                         profilePicPreview.style.display = 'block';
                         profilePicPlaceholder.style.display = 'none';
                         removeProfilePicBtn.style.display = 'block';
+
+                        // If we found it in the old format, migrate it to the new format
+                        if (!localStorage.getItem(`profilePicture_${userId}`) && localStorage.getItem('profilePicture')) {
+                            localStorage.setItem(`profilePicture_${userId}`, profilePic);
+                        }
                     }
                 }
             }
 
             // Save profile picture to storage
             function saveProfilePictureToStorage(profilePic) {
+                // Store with user-specific key
+                const userId = user.id;
+                localStorage.setItem(`profilePicture_${userId}`, profilePic);
+
+                // Also store with generic key for backward compatibility
                 localStorage.setItem('profilePicture', profilePic);
             }
 

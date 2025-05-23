@@ -114,6 +114,14 @@
             background-color: var(--primary-color);
         }
 
+        .history-card-image .profile-pic {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            border-radius: 10px 10px 0 0;
+        }
+
         .history-card-content {
             padding: 15px;
         }
@@ -249,12 +257,13 @@
             </div>
             <nav>
                 <ul class="nav-links" id="logged-in-nav" style="display: none;">
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="dashboard.html">Home</a></li>
                     <li><a href="network.html">Network</a></li>
                     <li><a href="discover.html">Discover</a></li>
                     <li><a href="swipe-history.html" class="active">History</a></li>
+                    <li><a href="mentorship.html">Mentorship</a></li>
                     <li><a href="messages.html" class="messages-link" style="display: none;">Messages</a></li>
+                    <li><a href="#">Notifications</a></li>
                 </ul>
                 <ul class="nav-links" id="logged-out-nav">
                     <li><a href="index.html">Home</a></li>
@@ -456,10 +465,17 @@
                         day: 'numeric'
                     });
 
+                    // Try to get the user's profile picture from localStorage
+                    const profilePicKey = `profilePicture_${item.id}`;
+                    const profilePic = localStorage.getItem(profilePicKey);
+
                     html += `
                     <div class="history-card" data-id="${item.id}">
                         <div class="history-card-image">
-                            <div class="profile-initials">${initials}</div>
+                            ${profilePic ?
+                                `<img src="${profilePic}" alt="${fullName}" class="profile-pic">` :
+                                `<div class="profile-initials">${initials}</div>`
+                            }
                         </div>
                         <div class="history-card-content">
                             <div class="history-card-name">${fullName}</div>

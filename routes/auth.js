@@ -23,9 +23,14 @@ router.post('/register', async (req, res) => {
       fieldOfWork,
       country,
       location,
+      postalCode,
       skill1,
       skill2,
-      skill3
+      skill3,
+      latitude,
+      longitude,
+      locationSharing,
+      remoteWork
     } = req.body;
 
     // Check if user already exists
@@ -52,6 +57,15 @@ router.post('/register', async (req, res) => {
     // Save user to database
     await user.save();
 
+    // Prepare coordinates if latitude and longitude are provided
+    let coordinates = undefined;
+    if (latitude && longitude && !isNaN(parseFloat(latitude)) && !isNaN(parseFloat(longitude))) {
+      coordinates = {
+        type: 'Point',
+        coordinates: [parseFloat(longitude), parseFloat(latitude)] // GeoJSON format is [longitude, latitude]
+      };
+    }
+
     // Create professional info
     const professionalInfo = new ProfessionalInfo({
       user: user._id,
@@ -59,7 +73,11 @@ router.post('/register', async (req, res) => {
       companyName,
       fieldOfWork,
       country,
-      location
+      location,
+      postalCode,
+      coordinates: coordinates,
+      locationSharingEnabled: locationSharing === true || locationSharing === 'true',
+      remoteWorkEnabled: remoteWork === true || remoteWork === 'true'
     });
 
     // Save professional info
@@ -591,11 +609,31 @@ router.post('/match', async (req, res) => {
       }
     }
 
-    return res.json({
-      success: true,
-      message: `${action === 'like' ? 'Like' : 'Dislike'} recorded successfully`,
-      mutualMatch
-    });
+    // If there's a mutual match, return more information about the matched user
+    if (mutualMatch) {
+      // Get user details for the notification
+      const matchedUser = await User.findById(toUserId).select('firstName lastName username');
+      const currentUser = await User.findById(fromUserId).select('firstName lastName username');
+
+      return res.json({
+        success: true,
+        message: `${action === 'like' ? 'Like' : 'Dislike'} recorded successfully`,
+        mutualMatch: true,
+        matchedUser: {
+          id: toUserId,
+          name: `${matchedUser.firstName} ${matchedUser.lastName}`.trim() || matchedUser.username
+        },
+        currentUser: {
+          name: `${currentUser.firstName} ${currentUser.lastName}`.trim() || currentUser.username
+        }
+      });
+    } else {
+      return res.json({
+        success: true,
+        message: `${action === 'like' ? 'Like' : 'Dislike'} recorded successfully`,
+        mutualMatch: false
+      });
+    }
   } catch (error) {
     console.error('Error recording match action:', error);
     return res.json({
@@ -656,42 +694,158 @@ router.get('/potential-matches/:userId', async (req, res) => {
     // Combine the lists of users to exclude
     const excludeUserIds = [...swipedUserIds, ...connectedUserIds, userId];
 
-    // Find all users that are not in the exclude list
-    // Join with professional info to get more details
-    const potentialMatches = await User.aggregate([
-      {
-        $match: {
-          _id: { $nin: excludeUserIds.map(id => new mongoose.Types.ObjectId(id.toString())) }
+    // Find the user's professional info to get their coordinates
+    const userProfInfo = await ProfessionalInfo.findOne({ user: userId });
+    const hasValidLocation = userProfInfo &&
+                            userProfInfo.locationSharingEnabled &&
+                            userProfInfo.coordinates &&
+                            userProfInfo.coordinates.coordinates &&
+                            userProfInfo.coordinates.coordinates.length === 2 &&
+                            !(userProfInfo.coordinates.coordinates[0] === 0 && userProfInfo.coordinates.coordinates[1] === 0);
+
+    // If user has valid location, use geoNear to find potential matches with distance
+    let potentialMatches;
+
+    if (hasValidLocation) {
+      potentialMatches = await ProfessionalInfo.aggregate([
+        {
+          $geoNear: {
+            near: userProfInfo.coordinates,
+            distanceField: "calculatedDistance",
+            query: {
+              user: { $nin: excludeUserIds.map(id => new mongoose.Types.ObjectId(id.toString())) },
+              locationSharingEnabled: true // Only include users who have enabled location sharing
+            },
+            spherical: true
+          }
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'user',
+            foreignField: '_id',
+            as: 'userInfo'
+          }
+        },
+        {
+          $unwind: '$userInfo'
+        },
+        {
+          $project: {
+            _id: '$userInfo._id',
+            firstName: '$userInfo.firstName',
+            lastName: '$userInfo.lastName',
+            username: '$userInfo.username',
+            professionalInfo: {
+              fieldOfWork: '$fieldOfWork',
+              companyName: '$companyName',
+              country: '$country',
+              location: '$location',
+              mentorshipDetails: '$mentorshipDetails',
+              locationSharingEnabled: '$locationSharingEnabled'
+            },
+            // Convert distance from meters to kilometers and round to 1 decimal place
+            distance: {
+              $round: [
+                {
+                  $cond: {
+                    if: { $lt: ["$calculatedDistance", 1000] }, // If less than 1km
+                    then: 1, // Show as 1km minimum
+                    else: { $divide: ["$calculatedDistance", 1000] } // Convert to km
+                  }
+                },
+                1 // Round to 1 decimal place
+              ]
+            }
+          }
         }
-      },
-      {
-        $lookup: {
-          from: 'professionalinfos',
-          localField: '_id',
-          foreignField: 'user',
-          as: 'professionalInfo'
+      ]);
+
+      // Find users without location sharing enabled separately
+      const usersWithoutLocation = await User.aggregate([
+        {
+          $match: {
+            _id: { $nin: excludeUserIds.map(id => new mongoose.Types.ObjectId(id.toString())) }
+          }
+        },
+        {
+          $lookup: {
+            from: 'professionalinfos',
+            localField: '_id',
+            foreignField: 'user',
+            as: 'professionalInfo'
+          }
+        },
+        {
+          $unwind: {
+            path: '$professionalInfo',
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $match: {
+            $or: [
+              { 'professionalInfo.locationSharingEnabled': { $ne: true } },
+              { 'professionalInfo.locationSharingEnabled': { $exists: false } }
+            ]
+          }
+        },
+        {
+          $project: {
+            _id: 1,
+            firstName: 1,
+            lastName: 1,
+            username: 1,
+            'professionalInfo.fieldOfWork': 1,
+            'professionalInfo.companyName': 1,
+            'professionalInfo.country': 1,
+            'professionalInfo.location': 1,
+            'professionalInfo.mentorshipDetails': 1,
+            'professionalInfo.locationSharingEnabled': 1
+          }
         }
-      },
-      {
-        $unwind: {
-          path: '$professionalInfo',
-          preserveNullAndEmptyArrays: true
+      ]);
+
+      // Combine both sets of users
+      potentialMatches = [...potentialMatches, ...usersWithoutLocation];
+    } else {
+      // If user doesn't have valid location, use regular query
+      potentialMatches = await User.aggregate([
+        {
+          $match: {
+            _id: { $nin: excludeUserIds.map(id => new mongoose.Types.ObjectId(id.toString())) }
+          }
+        },
+        {
+          $lookup: {
+            from: 'professionalinfos',
+            localField: '_id',
+            foreignField: 'user',
+            as: 'professionalInfo'
+          }
+        },
+        {
+          $unwind: {
+            path: '$professionalInfo',
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $project: {
+            _id: 1,
+            firstName: 1,
+            lastName: 1,
+            username: 1,
+            'professionalInfo.fieldOfWork': 1,
+            'professionalInfo.companyName': 1,
+            'professionalInfo.country': 1,
+            'professionalInfo.location': 1,
+            'professionalInfo.mentorshipDetails': 1,
+            'professionalInfo.locationSharingEnabled': 1
+          }
         }
-      },
-      {
-        $project: {
-          _id: 1,
-          firstName: 1,
-          lastName: 1,
-          username: 1,
-          'professionalInfo.fieldOfWork': 1,
-          'professionalInfo.companyName': 1,
-          'professionalInfo.country': 1,
-          'professionalInfo.location': 1,
-          'professionalInfo.mentorshipDetails': 1
-        }
-      }
-    ]);
+      ]);
+    }
 
     // Add a flag to indicate if the user has already liked the current user
     const formattedMatches = potentialMatches.map(match => {
@@ -699,6 +853,19 @@ router.get('/potential-matches/:userId', async (req, res) => {
         ...match,
         hasLikedYou: likedByUserIds.includes(match._id.toString())
       };
+    });
+
+    // Sort by distance if available, otherwise randomize
+    formattedMatches.sort((a, b) => {
+      if (a.distance && b.distance) {
+        return a.distance - b.distance;
+      } else if (a.distance) {
+        return -1; // a has distance, b doesn't, so a comes first
+      } else if (b.distance) {
+        return 1; // b has distance, a doesn't, so b comes first
+      } else {
+        return Math.random() - 0.5; // randomize users without distance
+      }
     });
 
     return res.json({
@@ -1023,6 +1190,562 @@ router.get('/mutual-matches/:userId', async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching mutual matches:', error);
+    return res.json({
+      success: false,
+      message: `Error: ${error.message}`
+    });
+  }
+});
+
+// @route   GET /api/nearby-users/:userId
+// @desc    Get nearby users with distance information
+// @access  Public (should be protected in production)
+router.get('/nearby-users/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { maxDistance = 100000 } = req.query; // Default max distance is 100km
+
+    // Validate user ID
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.json({
+        success: false,
+        message: "Invalid user ID"
+      });
+    }
+
+    // Find the user's professional info to get their coordinates
+    const userProfInfo = await ProfessionalInfo.findOne({ user: userId });
+    if (!userProfInfo) {
+      return res.json({
+        success: false,
+        message: "User professional info not found"
+      });
+    }
+
+    // Check if user has location sharing enabled and has valid coordinates
+    if (!userProfInfo.locationSharingEnabled ||
+        !userProfInfo.coordinates ||
+        !userProfInfo.coordinates.coordinates ||
+        userProfInfo.coordinates.coordinates.length !== 2 ||
+        userProfInfo.coordinates.coordinates[0] === 0 && userProfInfo.coordinates.coordinates[1] === 0) {
+      return res.json({
+        success: false,
+        message: "Location sharing is disabled or location is not available"
+      });
+    }
+
+    // Find nearby users with distance calculation
+    const nearbyUsers = await ProfessionalInfo.aggregate([
+      {
+        $geoNear: {
+          near: userProfInfo.coordinates,
+          distanceField: "calculatedDistance",
+          maxDistance: parseInt(maxDistance),
+          query: {
+            user: { $ne: new mongoose.Types.ObjectId(userId) }, // Exclude the current user
+            locationSharingEnabled: true // Only include users who have enabled location sharing
+          },
+          spherical: true
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'user',
+          foreignField: '_id',
+          as: 'userInfo'
+        }
+      },
+      {
+        $unwind: '$userInfo'
+      },
+      {
+        $project: {
+          _id: 0,
+          userId: '$user',
+          firstName: '$userInfo.firstName',
+          lastName: '$userInfo.lastName',
+          username: '$userInfo.username',
+          fieldOfWork: 1,
+          companyName: 1,
+          country: 1,
+          location: 1,
+          isAvailableAsMentor: '$userInfo.isAvailableAsMentor',
+          // Convert distance from meters to kilometers and round to 1 decimal place
+          distance: {
+            $round: [
+              {
+                $cond: {
+                  if: { $lt: ["$calculatedDistance", 1000] }, // If less than 1km
+                  then: 1, // Show as 1km minimum
+                  else: { $divide: ["$calculatedDistance", 1000] } // Convert to km
+                }
+              },
+              1 // Round to 1 decimal place
+            ]
+          }
+        }
+      },
+      {
+        $sort: { distance: 1 } // Sort by distance ascending
+      }
+    ]);
+
+    return res.json({
+      success: true,
+      nearbyUsers
+    });
+  } catch (error) {
+    console.error('Error fetching nearby users:', error);
+    return res.json({
+      success: false,
+      message: `Error: ${error.message}`
+    });
+  }
+});
+
+// @route   GET /api/mentors/:userId
+// @desc    Get available mentors for a user
+// @access  Public (should be protected in production)
+router.get('/mentors/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Validate user ID
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.json({
+        success: false,
+        message: "Invalid user ID"
+      });
+    }
+
+    // Find the user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    // Find all users who are available as mentors
+    // Join with professional info to get more details
+    const mentors = await User.aggregate([
+      {
+        $match: {
+          _id: { $ne: new mongoose.Types.ObjectId(userId) }, // Exclude the current user
+          isAvailableAsMentor: true // Only include users who are available as mentors
+        }
+      },
+      {
+        $lookup: {
+          from: 'professionalinfos',
+          localField: '_id',
+          foreignField: 'user',
+          as: 'professionalInfo'
+        }
+      },
+      {
+        $unwind: {
+          path: '$professionalInfo',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          firstName: 1,
+          lastName: 1,
+          username: 1,
+          'professionalInfo.fieldOfWork': 1,
+          'professionalInfo.companyName': 1,
+          'professionalInfo.country': 1,
+          'professionalInfo.location': 1,
+          'professionalInfo.mentorshipDetails': 1
+        }
+      }
+    ]);
+
+    return res.json({
+      success: true,
+      mentors
+    });
+  } catch (error) {
+    console.error('Error fetching mentors:', error);
+    return res.json({
+      success: false,
+      message: `Error: ${error.message}`
+    });
+  }
+});
+
+// @route   GET /api/my-mentors/:userId
+// @desc    Get mentors for a user
+// @access  Public (should be protected in production)
+router.get('/my-mentors/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Validate user ID
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.json({
+        success: false,
+        message: "Invalid user ID"
+      });
+    }
+
+    // Find connections where the user is the mentee
+    const connections = await Connection.find({
+      fromUser: userId,
+      isMentorship: true,
+      status: 'accepted'
+    }).populate({
+      path: 'toUser',
+      select: 'firstName lastName username',
+      populate: {
+        path: 'professionalInfo',
+        select: 'fieldOfWork companyName country location mentorshipDetails'
+      }
+    });
+
+    // Format the mentors
+    const mentors = connections.map(connection => {
+      const mentor = connection.toUser;
+      return {
+        _id: mentor._id,
+        firstName: mentor.firstName,
+        lastName: mentor.lastName,
+        username: mentor.username,
+        professionalInfo: mentor.professionalInfo
+      };
+    });
+
+    return res.json({
+      success: true,
+      mentors
+    });
+  } catch (error) {
+    console.error('Error fetching my mentors:', error);
+    return res.json({
+      success: false,
+      message: `Error: ${error.message}`
+    });
+  }
+});
+
+// @route   GET /api/mentorship-requests/:userId
+// @desc    Get mentorship requests for a user
+// @access  Public (should be protected in production)
+router.get('/mentorship-requests/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Validate user ID
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.json({
+        success: false,
+        message: "Invalid user ID"
+      });
+    }
+
+    // Find mentorship requests where the user is the mentor
+    const requests = await Connection.find({
+      toUser: userId,
+      isMentorship: true,
+      status: 'pending'
+    }).populate({
+      path: 'fromUser',
+      select: 'firstName lastName username',
+      populate: {
+        path: 'professionalInfo',
+        select: 'fieldOfWork companyName country location'
+      }
+    });
+
+    return res.json({
+      success: true,
+      requests
+    });
+  } catch (error) {
+    console.error('Error fetching mentorship requests:', error);
+    return res.json({
+      success: false,
+      message: `Error: ${error.message}`
+    });
+  }
+});
+
+// @route   POST /api/request-mentorship
+// @desc    Request mentorship from a user
+// @access  Public (should be protected in production)
+router.post('/request-mentorship', async (req, res) => {
+  try {
+    const { fromUserId, toUserId } = req.body;
+
+    // Validate user IDs
+    if (!mongoose.Types.ObjectId.isValid(fromUserId) || !mongoose.Types.ObjectId.isValid(toUserId)) {
+      return res.json({
+        success: false,
+        message: "Invalid user ID"
+      });
+    }
+
+    // Check if a connection already exists
+    const existingConnection = await Connection.findOne({
+      fromUser: fromUserId,
+      toUser: toUserId,
+      isMentorship: true
+    });
+
+    if (existingConnection) {
+      return res.json({
+        success: false,
+        message: "A mentorship request already exists"
+      });
+    }
+
+    // Create a new connection request
+    const connection = new Connection({
+      fromUser: fromUserId,
+      toUser: toUserId,
+      status: 'pending',
+      isMentorship: true
+    });
+
+    await connection.save();
+
+    return res.json({
+      success: true,
+      message: "Mentorship request sent successfully"
+    });
+  } catch (error) {
+    console.error('Error requesting mentorship:', error);
+    return res.json({
+      success: false,
+      message: `Error: ${error.message}`
+    });
+  }
+});
+
+// @route   PUT /api/mentorship-request/:requestId
+// @desc    Update mentorship request status
+// @access  Public (should be protected in production)
+router.put('/mentorship-request/:requestId', async (req, res) => {
+  try {
+    const { requestId } = req.params;
+    const { status } = req.body;
+
+    // Validate request ID
+    if (!mongoose.Types.ObjectId.isValid(requestId)) {
+      return res.json({
+        success: false,
+        message: "Invalid request ID"
+      });
+    }
+
+    // Validate status
+    if (status !== 'accepted' && status !== 'rejected') {
+      return res.json({
+        success: false,
+        message: "Invalid status"
+      });
+    }
+
+    // Find the connection request
+    const connection = await Connection.findById(requestId);
+    if (!connection) {
+      return res.json({
+        success: false,
+        message: "Mentorship request not found"
+      });
+    }
+
+    // Update the status
+    connection.status = status;
+    await connection.save();
+
+    // If accepted, create a conversation
+    if (status === 'accepted') {
+      const Conversation = require('../models/Conversation');
+      let conversation = await Conversation.findOne({
+        participants: { $all: [connection.fromUser, connection.toUser] }
+      });
+
+      // If no conversation exists, create one
+      if (!conversation) {
+        conversation = new Conversation({
+          participants: [connection.fromUser, connection.toUser]
+        });
+        await conversation.save();
+      }
+    }
+
+    return res.json({
+      success: true,
+      message: `Mentorship request ${status === 'accepted' ? 'accepted' : 'declined'} successfully`
+    });
+  } catch (error) {
+    console.error('Error updating mentorship request:', error);
+    return res.json({
+      success: false,
+      message: `Error: ${error.message}`
+    });
+  }
+});
+
+// @route   GET /api/user/:userId
+// @desc    Get user data with professional info
+// @access  Public (should be protected in production)
+router.get('/user/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Validate user ID
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.json({
+        success: false,
+        message: "Invalid user ID"
+      });
+    }
+
+    // Find the user with professional info
+    const user = await User.findById(userId).select('-password');
+    if (!user) {
+      return res.json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    // Get professional info
+    const professionalInfo = await ProfessionalInfo.findOne({ user: userId });
+
+    // Convert to plain object to add professionalInfo
+    const userObj = user.toObject();
+    userObj.professionalInfo = professionalInfo || null;
+
+    return res.json({
+      success: true,
+      user: userObj
+    });
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    return res.json({
+      success: false,
+      message: `Error: ${error.message}`
+    });
+  }
+});
+
+// @route   PUT /api/update-location/:userId
+// @desc    Update user's location
+// @access  Public (should be protected in production)
+router.put('/update-location/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { latitude, longitude, locationSharingEnabled } = req.body;
+
+    // Validate user ID
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.json({
+        success: false,
+        message: "Invalid user ID"
+      });
+    }
+
+    // Find the user's professional info
+    const professionalInfo = await ProfessionalInfo.findOne({ user: userId });
+    if (!professionalInfo) {
+      return res.json({
+        success: false,
+        message: "Professional info not found"
+      });
+    }
+
+    // Update location sharing preference if provided
+    if (locationSharingEnabled !== undefined) {
+      professionalInfo.locationSharingEnabled = locationSharingEnabled;
+    }
+
+    // Update coordinates if provided and location sharing is enabled
+    if (professionalInfo.locationSharingEnabled &&
+        latitude && longitude &&
+        !isNaN(parseFloat(latitude)) && !isNaN(parseFloat(longitude))) {
+
+      professionalInfo.coordinates = {
+        type: 'Point',
+        coordinates: [parseFloat(longitude), parseFloat(latitude)] // GeoJSON format is [longitude, latitude]
+      };
+      professionalInfo.lastLocationUpdate = new Date();
+    }
+
+    await professionalInfo.save();
+
+    return res.json({
+      success: true,
+      message: "Location updated successfully"
+    });
+  } catch (error) {
+    console.error('Error updating location:', error);
+    return res.json({
+      success: false,
+      message: `Error: ${error.message}`
+    });
+  }
+});
+
+// @route   PUT /api/toggle-mentor-status/:userId
+// @desc    Toggle user's availability as a mentor
+// @access  Public (should be protected in production)
+router.put('/toggle-mentor-status/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { isAvailable, mentorshipDetails } = req.body;
+
+    // Validate user ID
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.json({
+        success: false,
+        message: "Invalid user ID"
+      });
+    }
+
+    // Find the user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    // Update user's mentor status
+    user.isAvailableAsMentor = isAvailable;
+    await user.save();
+
+    // Update professional info if mentorship details are provided
+    if (mentorshipDetails) {
+      let professionalInfo = await ProfessionalInfo.findOne({ user: userId });
+
+      if (professionalInfo) {
+        professionalInfo.mentorshipDetails = mentorshipDetails;
+        await professionalInfo.save();
+      } else {
+        // Create new professional info if it doesn't exist
+        professionalInfo = new ProfessionalInfo({
+          user: userId,
+          mentorshipDetails: mentorshipDetails
+        });
+        await professionalInfo.save();
+      }
+    }
+
+    return res.json({
+      success: true,
+      message: `You are now ${isAvailable ? 'available' : 'unavailable'} as a mentor`
+    });
+  } catch (error) {
+    console.error('Error toggling mentor status:', error);
     return res.json({
       success: false,
       message: `Error: ${error.message}`

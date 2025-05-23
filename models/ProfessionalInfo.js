@@ -26,6 +26,33 @@ const ProfessionalInfoSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  postalCode: {
+    type: String,
+    trim: true
+  },
+  coordinates: {
+    type: {
+      type: String,
+      enum: ['Point'],
+      default: 'Point'
+    },
+    coordinates: {
+      type: [Number], // [longitude, latitude]
+      default: [0, 0]
+    }
+  },
+  lastLocationUpdate: {
+    type: Date,
+    default: Date.now
+  },
+  locationSharingEnabled: {
+    type: Boolean,
+    default: true
+  },
+  remoteWorkEnabled: {
+    type: Boolean,
+    default: false
+  },
   availableForMentorship: {
     type: Boolean,
     default: false
@@ -36,5 +63,8 @@ const ProfessionalInfoSchema = new mongoose.Schema({
     default: ''
   }
 });
+
+// Create a 2dsphere index for geospatial queries
+ProfessionalInfoSchema.index({ coordinates: '2dsphere' });
 
 module.exports = mongoose.model('ProfessionalInfo', ProfessionalInfoSchema);
